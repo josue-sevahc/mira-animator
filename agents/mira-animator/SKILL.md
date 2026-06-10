@@ -55,7 +55,7 @@ Textos visíveis em português brasileiro, acentuação 100% correta, UTF-8 dire
 
 ## Onde o Slide é Inserido
 
-Em `slides/cap{NN}/index.html` do capítulo em questão, como um novo card dentro do `<main>`. Se o arquivo não existir, crie do zero copiando o esqueleto de `slides/cap06/index.html` (reference padrão).
+Como um novo card dentro do deck do tema, em `slides/<tema>/index.html`. Se o deck ainda não existir, crie a partir de um esqueleto em `mira-templates/decks/` (aula-capitulo, pitch-projeto ou demo-tecnica), que já vem com o sistema de passagem de slides embutido.
 
 ## Estrutura Obrigatória do Card
 
@@ -234,7 +234,7 @@ Loop interno: partícula viajando de A para B em cada linha (com `animation-dela
 1. **Identificar o conceito** que o slide vai comunicar (revelação? comparação? hierarquia? evolução?)
 2. **Escolher a metáfora visual** mais forte para esse conceito (não copiar uma metáfora já usada no mesmo capítulo se possível)
 3. **Esboçar mentalmente o loop interno** ANTES de codar. Se não houver loop, parar e repensar.
-4. **Ler `slides/cap06/index.html`** como referência de padrão (especialmente os cards 4, 5, 6, 7 que foram os mais polidos).
+4. **Ler um esqueleto em `mira-templates/decks/`** como referência de padrão visual e estrutural do deck.
 5. **Adicionar o CSS específico** do novo stage no `<style>`.
 6. **Inserir o HTML do card** dentro do `<main>` em posição lógica.
 7. **Implementar a função JS** com:
@@ -270,16 +270,16 @@ Loop interno: partícula viajando de A para B em cada linha (com `animation-dela
 - [ ] Pelo menos um elemento sempre em movimento depois da entrada.
 - [ ] Metáfora visual diferente das já usadas no mesmo capítulo.
 
-## Referência Canônica
+## Referência de Padrões
 
-O arquivo `slides/cap06/index.html` contém o estado da arte desta skill, com 7 cards animados em metáforas diferentes:
+Os blueprints de card já prontos vivem em `mira-templates/slides/` (capa, comparação, métricas, fluxo, escada, orbital, encerramento), cada um com seu loop interno. Os esqueletos de deck completos vivem em `mira-templates/decks/`. Quando criar um novo slide, abra o blueprint mais próximo do que você quer fazer e use como base estrutural, variando a metáfora visual conforme o conceito.
 
-1. **Card 1 (Orquestra)**, 80 músicos pulsando em uníssono aleatório enquanto a batuta balança.
-2. **Card 2 (Spec→Agentes)**, partículas saem da spec e ativam 10 agentes em sequência.
-3. **Card 3 (SDD Definição)**, hero quote + comparação Antes/Agora + 3 princípios. Loop sutil via spotlight.
-4. **Card 4 (Spec no Centro)**, hub-and-spoke com SPEC pulsante, anel orbital, traços fluindo, satélites em perseguição.
-5. **Card 5 (Spec Moderna)**, 8 flip cards 3D com loop de pulso sequencial pós-reveal.
-6. **Card 6 (SDD vs Agile)**, battle arena com VS badge pulsando, partículas em onda por linha, spotlight cycling no lado SDD.
-7. **Card 7 (Próximo Degrau)**, staircase com climber orbe subindo + trail + SDD pulsando no topo + loop completo.
+## Sistema de Passagem de Slides (obrigatório)
 
-Quando criar um novo slide, abra esse arquivo, identifique o card mais próximo do que você quer fazer, e use como base estrutural.
+Todo deck gerado deve manter o sistema de navegação que já vem nos esqueletos de `mira-templates/decks/`:
+
+- Barra de progresso no topo (`#mira-progress`).
+- Botão flutuante "próximo" no canto (`#mira-next`).
+- Navegação por teclado: setas, PageUp/PageDown, Home/End e F para tela cheia, rolando seção a seção via `scrollIntoView`.
+
+Cada slide é uma `<section class="min-h-screen">` filha direta do `<body>`. Nunca remova esse bloco ao editar ou montar um deck.

@@ -123,7 +123,7 @@ Apresente o relatorio no seguinte formato:
 ```
 # Relatorio de Validacao: [Capitulo]
 
-**Arquivo:** slides/capXX/index.html
+**Arquivo:** slides/<tema>/index.html
 **Data:** YYYY-MM-DD
 **Total de verificacoes:** XX
 **Passou:** XX | **Falhou:** XX | **Avisos:** XX
