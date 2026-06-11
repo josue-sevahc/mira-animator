@@ -1,6 +1,6 @@
 ---
 name: mira-squared
-description: Gera uma versão QUADRADA (1:1, 1080x1080) de um deck do Mira, a partir do deck 16:9 original, para vídeo em formato quadrado (feed do Instagram, LinkedIn, etc.). Não toca no arquivo original: cria um novo arquivo index-1x1.html ao lado, fixando cada slide em 1080x1080 e reduzindo os espaços laterais, com moldura fixa e ajuste leve. Use SEMPRE que o usuário disser "/mira-squared", "versão quadrada", "deixa quadrado", "formato 1:1", "1080x1080", "apresentação quadrada", "corta os lados", "reduz os espaços laterais", "vídeo quadrado", ou pedir o deck num formato quadrado para outra rede.
+description: Gera uma versão QUADRADA (1:1, 1080x1080) de um deck do Mira, a partir do deck 16:9 original, para vídeo em formato quadrado (feed do Instagram, LinkedIn, etc.). Não toca no arquivo original: cria um novo arquivo index-1x1.html ao lado, fixando cada slide em 1080x1080 e reduzindo os espaços laterais, com moldura fixa e ajuste leve. O slide fica centralizado por padrão, com opção de alinhar à esquerda ou à direita. Use SEMPRE que o usuário disser "/mira-squared", "versão quadrada", "deixa quadrado", "formato 1:1", "1080x1080", "apresentação quadrada", "corta os lados", "reduz os espaços laterais", "vídeo quadrado", ou pedir o deck num formato quadrado para outra rede.
 
 ---
 
@@ -35,9 +35,22 @@ Siga `agents/_shared/idioma.md`. Texto visível em português correto. Proibido 
 ```html
 <style id="mira-formato-1x1">
   /* Versão quadrada 1080x1080, moldura fixa */
-  :root { --fmt-w: 1080px; --fmt-h: 1080px; }
+  :root {
+    --fmt-w: 1080px;
+    --fmt-h: 1080px;
+    --fmt-align: center; /* posição do slide: center (padrão), flex-start (esquerda), flex-end (direita) */
+  }
   html { background: var(--mira-bg, #000); }
-  body { width: var(--fmt-w); margin-left: auto; margin-right: auto; }
+  /* Centraliza cada slide na horizontal via flex.
+     Não usar margin:auto na body: o Preflight do Tailwind (Play CDN) injeta
+     body{margin:0} em runtime, entra por último na cascata e venceria o margin:auto,
+     prendendo o slide à esquerda. */
+  body {
+    background: var(--mira-bg, #000);
+    display: flex;
+    flex-direction: column;
+    align-items: var(--fmt-align);
+  }
   body > section {
     width: var(--fmt-w) !important;
     height: var(--fmt-h) !important;
@@ -51,6 +64,8 @@ Siga `agents/_shared/idioma.md`. Texto visível em português correto. Proibido 
   .anim-stage { height: 560px !important; }
 </style>
 ```
+
+**Posição do slide (padrão: centro).** O slide fica centralizado por padrão. Se o usuário pedir o slide encostado num lado, troque só a variável `--fmt-align`: `center` (padrão), `flex-start` (esquerda) ou `flex-end` (direita). É a única linha que muda; o resto da moldura continua igual.
 
 5. **Verificar o encaixe.** Confira mentalmente que, num quadro 1080x1080, cada slide cabe sem cortar conteúdo na vertical (título + card + pílulas) e que o conteúdo não estoura na horizontal. Se um slide específico ficar apertado na altura, reduza só o palco dele (ex.: `#st-XXXX { height: 480px !important; }`) dentro do mesmo bloco.
 6. **Reportar.** Informe o caminho `index-1x1.html`, a resolução alvo 1080x1080, e como gravar: ajuste a viewport do navegador ou da ferramenta de captura (OBS browser source, device toolbar, Puppeteer) para exatamente 1080x1080. Como o arquivo já tem tamanho fixo, ele bate com o quadro.
@@ -66,6 +81,7 @@ Siga `agents/_shared/idioma.md`. Texto visível em português correto. Proibido 
 - [ ] `index-1x1.html` criado na mesma pasta do deck.
 - [ ] Bloco `<style id="mira-formato-1x1">` injetado antes de `</head>`.
 - [ ] Cada `body > section` fixado em 1080x1080.
+- [ ] Slide centralizado por padrão (`--fmt-align: center`), via flex na `body`, não por `margin:auto`.
 - [ ] Espaços laterais reduzidos (max-width do conteúdo trazido para a largura do quadrado).
 - [ ] Navegação, animações, textos e cores intocados.
 - [ ] Nenhum slide corta conteúdo na vertical num quadro 1080x1080.

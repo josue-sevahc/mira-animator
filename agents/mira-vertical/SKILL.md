@@ -1,6 +1,6 @@
 ---
 name: mira-vertical
-description: Gera uma versão VERTICAL (9:16, 1080x1920) de um deck do Mira, a partir do deck 16:9 original, para vídeo vertical (Reels, Shorts, TikTok, Stories). Não toca no arquivo original: cria um novo arquivo index-9x16.html ao lado, fixando cada slide em 1080x1920, centralizando o conteúdo e aproveitando a altura, com moldura fixa e ajuste leve. Use SEMPRE que o usuário disser "/mira-vertical", "versão vertical", "deixa vertical", "formato 9:16", "1080x1920", "apresentação vertical", "para Reels", "para Shorts", "para Stories", "para TikTok", "vídeo vertical", "modo retrato", ou pedir o deck num formato vertical.
+description: Gera uma versão VERTICAL (9:16, 1080x1920) de um deck do Mira, a partir do deck 16:9 original, para vídeo vertical (Reels, Shorts, TikTok, Stories). Não toca no arquivo original: cria um novo arquivo index-9x16.html ao lado, fixando cada slide em 1080x1920, centralizando o conteúdo e aproveitando a altura, com moldura fixa e ajuste leve. O slide fica centralizado por padrão, com opção de alinhar à esquerda ou à direita. Use SEMPRE que o usuário disser "/mira-vertical", "versão vertical", "deixa vertical", "formato 9:16", "1080x1920", "apresentação vertical", "para Reels", "para Shorts", "para Stories", "para TikTok", "vídeo vertical", "modo retrato", ou pedir o deck num formato vertical.
 
 ---
 
@@ -35,9 +35,22 @@ Siga `agents/_shared/idioma.md`. Texto visível em português correto. Proibido 
 ```html
 <style id="mira-formato-9x16">
   /* Versão vertical 1080x1920, moldura fixa */
-  :root { --fmt-w: 1080px; --fmt-h: 1920px; }
+  :root {
+    --fmt-w: 1080px;
+    --fmt-h: 1920px;
+    --fmt-align: center; /* posição do slide: center (padrão), flex-start (esquerda), flex-end (direita) */
+  }
   html { background: var(--mira-bg, #000); }
-  body { width: var(--fmt-w); margin-left: auto; margin-right: auto; }
+  /* Centraliza cada slide na horizontal via flex.
+     Não usar margin:auto na body: o Preflight do Tailwind (Play CDN) injeta
+     body{margin:0} em runtime, entra por último na cascata e venceria o margin:auto,
+     prendendo o slide à esquerda. */
+  body {
+    background: var(--mira-bg, #000);
+    display: flex;
+    flex-direction: column;
+    align-items: var(--fmt-align);
+  }
   body > section {
     width: var(--fmt-w) !important;
     height: var(--fmt-h) !important;
@@ -51,6 +64,8 @@ Siga `agents/_shared/idioma.md`. Texto visível em português correto. Proibido 
   .anim-stage { height: 800px !important; }
 </style>
 ```
+
+**Posição do slide (padrão: centro).** O slide fica centralizado por padrão. Se o usuário pedir o slide encostado num lado, troque só a variável `--fmt-align`: `center` (padrão), `flex-start` (esquerda) ou `flex-end` (direita). É a única linha que muda; o resto da moldura continua igual.
 
 5. **Verificar o encaixe.** Confira mentalmente que, num quadro 1080x1920, o bloco central (título + card + pílulas) fica centralizado e cabe, sem cortar. No vertical sobra espaço acima e abaixo do bloco: isso é esperado no ajuste leve. Se o usuário pedir para preencher mais a altura, aí sim aumente título, palco e espaçamentos (vira reflow, fora do ajuste leve).
 6. **Reportar.** Informe o caminho `index-9x16.html`, a resolução alvo 1080x1920, e como gravar: ajuste a viewport do navegador ou da ferramenta de captura (OBS browser source, device toolbar, Puppeteer) para exatamente 1080x1920. Como o arquivo já tem tamanho fixo, ele bate com o quadro.
@@ -66,6 +81,7 @@ Siga `agents/_shared/idioma.md`. Texto visível em português correto. Proibido 
 - [ ] `index-9x16.html` criado na mesma pasta do deck.
 - [ ] Bloco `<style id="mira-formato-9x16">` injetado antes de `</head>`.
 - [ ] Cada `body > section` fixado em 1080x1920.
+- [ ] Slide centralizado por padrão (`--fmt-align: center`), via flex na `body`, não por `margin:auto`.
 - [ ] Espaços laterais reduzidos e palco aproveitando a altura.
 - [ ] Navegação, animações, textos e cores intocados.
 - [ ] O bloco central fica centralizado e não corta num quadro 1080x1920.
