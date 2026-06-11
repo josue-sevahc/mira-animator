@@ -32,6 +32,10 @@ Os agentes leem das fontes, mas escrevem somente em `decks/`.
 
 ## Criando um deck
 
+No Claude, use a skill `/mira-new`: ela conduz a criação de forma conversacional (nome do tema, template, tema base, cor principal e referências), monta a pasta `decks/<tema>/` e, ao final, oferece acionar o pipeline.
+
+Ou direto pelo CLI:
+
 ```bash
 npx mira-animator new minha-aula --deck=aula-capitulo --theme=mira-dark
 ```
