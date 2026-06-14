@@ -7,3 +7,9 @@ decks/**/assets/*.glb
 
 # MkDocs build output
 site/
+
+# Notas/rascunhos locais
+no_permissions.md
+
+# Deck de apresentacao (mantido apenas local, contem videos pesados)
+decks/apresentacao-mira/
