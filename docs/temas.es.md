@@ -20,13 +20,11 @@ Un tema es un conjunto de CSS variables que definen la identidad visual del deck
 | `corporate-blue` | Profesional, azul, corporativo. |
 | `neon-emerald` | Oscuro con acentos esmeralda vivos. |
 
-Elige un tema al crear:
+Elige un tema al crear, de forma conversacional con `/mira-new`:
 
-```bash
-npx mira-animator new mi-clase --theme=neon-emerald
+```text
+/mira-new crea una presentación llamada 'mi-clase' con el tema neon-emerald
 ```
-
-…o elígelo de forma conversacional con `/mira-new`.
 
 ## Blueprints de slide
 

@@ -1,8 +1,9 @@
+/* Mira brand color: orange #FF904D (same as the mira-dark presentation theme) */
 :root {
-  --md-primary-fg-color: #7c3aed;
-  --md-primary-fg-color--light: #a78bfa;
-  --md-primary-fg-color--dark: #5b21b6;
-  --md-accent-fg-color: #a855f7;
+  --md-primary-fg-color: #FF904D;
+  --md-primary-fg-color--light: #FFB07A;
+  --md-primary-fg-color--dark: #E8722A;
+  --md-accent-fg-color: #FF904D;
 }
 
 /* Gentle gradient on the hero title of the home page */
@@ -16,7 +17,7 @@
   color: #fff;
 }
 
-/* Inline code in a softer purple */
+/* Inline code: rounded corners */
 .md-typeset code {
   border-radius: 4px;
 }

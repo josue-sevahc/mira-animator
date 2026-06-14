@@ -20,13 +20,11 @@ A theme is a set of CSS variables that define the deck's visual identity — col
 | `corporate-blue` | Professional, blue, corporate. |
 | `neon-emerald` | Dark with vivid emerald accents. |
 
-Choose a theme at creation time:
+Choose a theme at creation time, conversationally through `/mira-new`:
 
-```bash
-npx mira-animator new my-talk --theme=neon-emerald
+```text
+/mira-new create a presentation called 'my-talk' with the neon-emerald theme
 ```
-
-…or pick it conversationally through `/mira-new`.
 
 ## Slide blueprints
 

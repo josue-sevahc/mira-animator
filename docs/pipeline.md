@@ -37,10 +37,18 @@ These run on top of an existing deck.
 
 | Agent | What it does |
 |---|---|
-| **mira-visuals** | Static images for slides: panels, diagrams, charts and infographics. |
-| **mira-image-prompt** | Builds JSON prompts for photorealistic image generation. |
-| **mira-img-animator** | Animates an existing image. |
+| **mira-visuals** | Static images for slides: panels, diagrams, charts and infographics. || **mira-img-animator** | Animates an existing image. |
 | **mira-chart** | Turns data into charts — from CSV/JSON, from an image, or from a hand-drawn sketch — and recommends the best chart type. |
+
+## On-slide element agents
+
+These drop a specific element into a slide.
+
+| Agent | What it does |
+|---|---|
+| **mira-3d** | Adds a true 3D element (real depth, auto-rotation, drag/zoom) in a clean card, choosing CSS 3D, procedural Three.js or a glTF `.glb`. A `.glb` slide needs a local HTTP server (the agent starts one and writes an `abrir-slide.cmd` launcher; needs Node.js); CSS 3D and procedural open from `file://`. |
+| **mira-qrcode** | Inserts a large, centered, scannable QR code from a link or text, generated locally and embedded as inline SVG, so it works from `file://` with no runtime dependency. |
+| **mira-image** | Places an image you already have (local file or URL) into a slide, copied into `assets/` and referenced by a relative path. Clean card, image static with the loop on the frame. Works from `file://` with no server. To generate an image see `mira-visuals`; to animate one see `mira-img-animator`. |
 
 ## Helper agents
 

@@ -19,12 +19,15 @@ npx mira-animator install
 
 # 2. vincula el contenido sobre el que quieres presentar
 npx mira-animator link ../mi-proyecto --name=miproyecto
-
-# 3. crea un deck
-npx mira-animator new mi-clase --deck=aula-capitulo --theme=mira-dark
 ```
 
-Luego abre el proyecto en Claude y di:
+Luego abre el proyecto en Claude y crea un deck conversando con él:
+
+```text
+/mira-new crea una nueva presentación llamada 'mi-clase'
+```
+
+Después di:
 
 > *"rellena el deck mi-clase con el contenido de la fuente miproyecto"*
 
@@ -38,6 +41,7 @@ El pipeline de agentes lee la fuente, planifica los slides, escribe el texto, mo
 - **Todo se mueve.** Cada slide de concepto recibe una animación en bucle continuo. La regla de oro de Mira: ninguna animación es estática — *entra* con coreografía y *después* entra en bucle.
 - **Metáforas, no viñetas.** El agente `mira-animated-metaphor` convierte conceptos abstractos en analogías concretas y animadas de la vida diaria.
 - **Varios formatos desde un solo deck.** Un deck 16:9 se convierte en versiones 1:1, 9:16, regla de los tercios y transición disolvencia — sin tocar el original.
+- **Más que slides.** Coloca un **elemento 3D** real (auto-rotante, arrastrable) o un **código QR** escaneable directo en un card, con `/mira-3d` y `/mira-qrcode`.
 - **Corre en cualquier lugar.** La salida es HTML puro. Doble clic en el archivo. Sin servidor, sin toolchain.
 
 ---

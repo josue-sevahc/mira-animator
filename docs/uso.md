@@ -14,12 +14,16 @@ See [Installation](instalacao.md) and [Linked sources](fontes.md) for details.
 
 ## 2. Create a deck
 
-The friendliest way is the conversational `/mira-new` skill inside Claude. It asks for the theme name, the deck template, the base theme, the primary color and any references, then assembles the `decks/<theme>/` folder and offers to trigger the pipeline.
+Creating a deck is conversational — just talk to `/mira-new` inside Claude:
 
-Or do it straight from the CLI:
+```text
+/mira-new create a new presentation called 'my-talk'
+```
 
-```bash
-npx mira-animator new my-talk --deck=aula-capitulo --theme=mira-dark
+It asks for the theme name, the deck template, the base theme, the primary color and any references, then assembles the `decks/<theme>/` folder and offers to trigger the pipeline. You can also spell out the template and theme up front:
+
+```text
+/mira-new create a presentation called 'my-talk' with the aula-capitulo template and the mira-dark theme
 ```
 
 **Deck templates**
@@ -58,6 +62,7 @@ Once the deck is built, you can shape the motion:
 - **Size** — *"put the animations at 6/10"* or *"this slide is too small, make it 7/10"*. The `mira-size-animator` agent scales the perceived size of each animation on a 1–10 scale (the default that `mira-animator` produces is 3/10).
 - **Metaphor** — *"turn this concept into an animated metaphor"*. The `mira-animated-metaphor` agent replaces a slide's animation with a concrete everyday analogy, keeping the title and pills.
 - **Visuals** — ask `mira-visuals` for static panels, diagrams or infographics, or `mira-chart` for data charts from a CSV/JSON, an image, or even a hand-drawn sketch.
+- **3D, QR & images:** drop a real, auto-rotating 3D element with `/mira-3d`, a scannable QR code (from a link or text) with `/mira-qrcode`, or an image you already have with `/mira-image`. A 3D slide that loads a `.glb` needs a local server (the agent starts one and writes a double-click launcher); everything else opens from `file://`.
 
 ## 5. Open and present
 

@@ -14,7 +14,6 @@ npx mira-animator --version      # print version
 | `install` | Installs Mira in the current folder (agents, templates, config). |
 | `link <path>` | Links a folder or file as a content source. |
 | `sources` | Lists the linked sources. |
-| `new <name>` | Creates a new deck from a template. |
 | `status` | Shows the state of the installation and the decks. |
 | `update` | Updates agents and templates to the latest version. |
 | `uninstall` | Removes Mira from the current folder. |
@@ -50,20 +49,24 @@ npx mira-animator sources
 
 Lists every linked source with its alias, type and path.
 
-## `new`
+## Creating a deck (`/mira-new`)
 
-```bash
-npx mira-animator new <name> [--deck=<template>] [--theme=<theme>]
+Creating a deck is **not** a CLI command — you do it conversationally in Claude, by talking to the `/mira-new` skill:
+
+```text
+/mira-new create a new presentation called 'my-talk'
 ```
 
-Creates a new deck under `decks/<name>/` from a template.
+It assembles `decks/<name>/` from a template and registers it. You can spell out the template and theme in the same sentence:
 
-| Option | Values |
+```text
+/mira-new create a presentation called 'my-talk' with the aula-capitulo template and the mira-dark theme
+```
+
+| Choice | Values |
 |---|---|
-| `--deck` | `aula-capitulo`, `pitch-projeto`, `demo-tecnica` |
-| `--theme` | `mira-dark`, `light-minimal`, `corporate-blue`, `neon-emerald` |
-
-You can also create decks conversationally with the `/mira-new` skill in Claude.
+| Template | `aula-capitulo`, `pitch-projeto`, `demo-tecnica` |
+| Theme | `mira-dark`, `light-minimal`, `corporate-blue`, `neon-emerald` |
 
 ## `status`
 

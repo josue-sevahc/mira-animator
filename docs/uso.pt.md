@@ -14,12 +14,16 @@ Veja [Instalação](instalacao.md) e [Fontes vinculadas](fontes.md) para detalhe
 
 ## 2. Crie um deck
 
-O jeito mais amigável é a skill conversacional `/mira-new` dentro do Claude. Ela pergunta o nome do tema, o template do deck, o tema base, a cor principal e referências, então monta a pasta `decks/<tema>/` e oferece acionar o pipeline.
+Criar um deck é conversacional — basta falar com o `/mira-new` dentro do Claude:
 
-Ou direto pelo CLI:
+```text
+/mira-new crie uma nova apresentação chamada 'minha-aula'
+```
 
-```bash
-npx mira-animator new minha-aula --deck=aula-capitulo --theme=mira-dark
+Ela pergunta o nome do tema, o template do deck, o tema base, a cor principal e referências, então monta a pasta `decks/<tema>/` e oferece acionar o pipeline. Você também pode já indicar o template e o tema na própria frase:
+
+```text
+/mira-new crie uma apresentação chamada 'minha-aula' com o template aula-capitulo e o tema mira-dark
 ```
 
 **Templates de deck**
@@ -58,6 +62,7 @@ Com o deck montado, você pode moldar o movimento:
 - **Tamanho** — *"coloca as animações em 6/10"* ou *"esse slide está pequeno, deixa em 7/10"*. O agente `mira-size-animator` escala a percepção de tamanho de cada animação numa escala de 1 a 10 (o padrão que o `mira-animator` gera é 3/10).
 - **Metáfora** — *"transforma esse conceito numa metáfora animada"*. O agente `mira-animated-metaphor` substitui a animação de um slide por uma analogia concreta do cotidiano, mantendo título e pílulas.
 - **Visuais** — peça ao `mira-visuals` painéis estáticos, diagramas ou infográficos, ou ao `mira-chart` gráficos de dados a partir de um CSV/JSON, uma imagem, ou até um rascunho à mão.
+- **3D, QR e imagens:** coloque um elemento 3D de verdade, que gira sozinho, com `/mira-3d`, um QR code escaneável (de um link ou texto) com `/mira-qrcode`, ou uma imagem que você já tem com `/mira-image`. Um slide 3D que carrega um `.glb` precisa de servidor local (o agente sobe um e gera um launcher de duplo-clique); todo o resto abre por `file://`.
 
 ## 5. Abra e apresente
 

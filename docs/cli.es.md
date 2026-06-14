@@ -14,7 +14,6 @@ npx mira-animator --version      # muestra la versión
 | `install` | Instala Mira en la carpeta actual (agentes, plantillas, config). |
 | `link <ruta>` | Vincula una carpeta o archivo como fuente de contenido. |
 | `sources` | Lista las fuentes vinculadas. |
-| `new <nombre>` | Crea un nuevo deck a partir de una plantilla. |
 | `status` | Muestra el estado de la instalación y los decks. |
 | `update` | Actualiza agentes y plantillas a la última versión. |
 | `uninstall` | Elimina Mira de la carpeta actual. |
@@ -50,20 +49,24 @@ npx mira-animator sources
 
 Lista cada fuente vinculada con su alias, tipo y ruta.
 
-## `new`
+## Crear un deck (`/mira-new`)
 
-```bash
-npx mira-animator new <nombre> [--deck=<plantilla>] [--theme=<tema>]
+Crear un deck **no** es un comando de CLI — lo haces conversando con Mira en Claude, mediante la skill `/mira-new`:
+
+```text
+/mira-new crea una nueva presentación llamada 'mi-clase'
 ```
 
-Crea un nuevo deck en `decks/<nombre>/` a partir de una plantilla.
+Monta `decks/<nombre>/` a partir de una plantilla y registra el deck. Puedes indicar la plantilla y el tema en la misma frase:
 
-| Opción | Valores |
+```text
+/mira-new crea una presentación llamada 'mi-clase' con la plantilla aula-capitulo y el tema mira-dark
+```
+
+| Elección | Valores |
 |---|---|
-| `--deck` | `aula-capitulo`, `pitch-projeto`, `demo-tecnica` |
-| `--theme` | `mira-dark`, `light-minimal`, `corporate-blue`, `neon-emerald` |
-
-También puedes crear decks de forma conversacional con la skill `/mira-new` en Claude.
+| Plantilla | `aula-capitulo`, `pitch-projeto`, `demo-tecnica` |
+| Tema | `mira-dark`, `light-minimal`, `corporate-blue`, `neon-emerald` |
 
 ## `status`
 

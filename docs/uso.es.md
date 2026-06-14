@@ -14,12 +14,16 @@ Mira [Instalación](instalacao.md) y [Fuentes vinculadas](fontes.md) para más d
 
 ## 2. Crea un deck
 
-La forma más amigable es la skill conversacional `/mira-new` dentro de Claude. Pregunta el nombre del tema, la plantilla del deck, el tema base, el color principal y referencias, luego monta la carpeta `decks/<tema>/` y ofrece accionar el pipeline.
+Crear un deck es conversacional — solo habla con `/mira-new` dentro de Claude:
 
-O directo desde el CLI:
+```text
+/mira-new crea una nueva presentación llamada 'mi-clase'
+```
 
-```bash
-npx mira-animator new mi-clase --deck=aula-capitulo --theme=mira-dark
+Pregunta el nombre del tema, la plantilla del deck, el tema base, el color principal y referencias, luego monta la carpeta `decks/<tema>/` y ofrece accionar el pipeline. También puedes indicar la plantilla y el tema en la misma frase:
+
+```text
+/mira-new crea una presentación llamada 'mi-clase' con la plantilla aula-capitulo y el tema mira-dark
 ```
 
 **Plantillas de deck**
@@ -58,6 +62,7 @@ Con el deck montado, puedes moldear el movimiento:
 - **Tamaño** — *"pon las animaciones en 6/10"* o *"este slide está pequeño, déjalo en 7/10"*. El agente `mira-size-animator` escala la percepción de tamaño de cada animación en una escala de 1 a 10 (el valor por defecto que genera `mira-animator` es 3/10).
 - **Metáfora** — *"convierte este concepto en una metáfora animada"*. El agente `mira-animated-metaphor` reemplaza la animación de un slide por una analogía concreta de la vida diaria, manteniendo el título y las píldoras.
 - **Visuales** — pide a `mira-visuals` paneles estáticos, diagramas o infografías, o a `mira-chart` gráficos de datos a partir de un CSV/JSON, una imagen, o incluso un boceto a mano.
+- **3D, QR e imágenes:** coloca un elemento 3D real y auto-rotante con `/mira-3d`, un código QR escaneable (a partir de un enlace o texto) con `/mira-qrcode`, o una imagen que ya tienes con `/mira-image`. Un slide 3D que carga un `.glb` necesita un servidor local (el agente arranca uno y escribe un lanzador de doble clic); todo lo demás se abre desde `file://`.
 
 ## 5. Abre y presenta
 

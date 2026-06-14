@@ -19,12 +19,15 @@ npx mira-animator install
 
 # 2. link the content you want to present about
 npx mira-animator link ../my-project --name=myproject
-
-# 3. create a deck
-npx mira-animator new my-talk --deck=aula-capitulo --theme=mira-dark
 ```
 
-Then open the project in Claude and say:
+Then open the project in Claude and create a deck just by talking to it:
+
+```text
+/mira-new create a new presentation called 'my-talk'
+```
+
+Then say:
 
 > *"fill the deck my-talk with content from the myproject source"*
 
@@ -38,6 +41,7 @@ The agent pipeline reads the source, plans the slides, writes the copy, builds t
 - **Everything moves.** Every concept slide gets a continuously looping animation. Mira's golden rule: no animation is static — it *enters* with choreography and *then* loops.
 - **Metaphors, not bullet points.** The `mira-animated-metaphor` agent turns abstract concepts into concrete, animated everyday analogies.
 - **Many formats from one deck.** A single 16:9 deck becomes 1:1, 9:16, rule-of-thirds, and dissolve-transition variants — without touching the original.
+- **More than slides.** Drop a real **3D element** (auto-rotating, draggable) or a scannable **QR code** straight into a card, with `/mira-3d` and `/mira-qrcode`.
 - **Runs anywhere.** Output is plain HTML. Double-click the file. No server, no toolchain.
 
 ---

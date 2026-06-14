@@ -62,12 +62,16 @@ The agents read from the sources, but write only to `decks/`.
 
 ## Creating a deck
 
-In Claude, use the `/mira-new` skill: it drives the creation conversationally (theme name, deck template, base theme, primary color and references), assembles the `decks/<theme>/` folder and, at the end, offers to trigger the pipeline.
+In Claude, just talk to `/mira-new` in plain language. It drives the creation conversationally (theme name, deck template, base theme, primary color and references), assembles the `decks/<theme>/` folder and, at the end, offers to trigger the pipeline.
 
-Or straight from the CLI:
+```text
+/mira-new create a new presentation called 'my-class'
+```
 
-```bash
-npx mira-animator new my-class --deck=aula-capitulo --theme=mira-dark
+You can spell out the template and theme in the same sentence:
+
+```text
+/mira-new create a presentation called 'my-class' with the aula-capitulo template and the mira-dark theme
 ```
 
 **Deck templates:** `aula-capitulo`, `pitch-projeto`, `demo-tecnica`.
@@ -91,7 +95,9 @@ mira-visuals          static images: panels, diagrams, charts and infographics
 mira-validator        final conformance report
 ```
 
-Support skills: `mira-image-prompt` (JSON prompts for photorealistic images), `mira-img-animator` (animates existing images) and `mira-chart` (data charts from CSV/JSON, images or hand sketches, with a best-type recommendation). Entry and helpers: `mira-new`, `mira-references`, `mira-get-videos`.
+Support skills: `mira-img-animator` (animates existing images) and `mira-chart` (data charts from CSV/JSON, images or hand sketches, with a best-type recommendation). Entry and helpers: `mira-new`, `mira-references`, `mira-get-videos`.
+
+On-slide elements: `mira-3d` (a true 3D element, auto-rotating and draggable, choosing CSS 3D, procedural Three.js or a glTF `.glb`; a `.glb` slide needs a local server, so the agent starts one and writes a double-click launcher), `mira-qrcode` (a scannable QR code from a link or text, generated locally as inline SVG, works from `file://`) and `mira-image` (places an image you already have into a slide, copied into `assets/` and referenced by a relative path, image static with the loop on the frame, works from `file://`).
 
 Each orchestrator pauses between agents and keeps you in control of every step.
 
@@ -128,7 +134,6 @@ Three layers under `templates/`:
 npx mira-animator install            # install Mira in the current folder
 npx mira-animator link <path>        # link a content source (--name, --type)
 npx mira-animator sources            # list linked sources
-npx mira-animator new <name>         # create a deck from a template (--deck, --theme)
 npx mira-animator status             # show install and deck state
 npx mira-animator update             # update agents and templates
 npx mira-animator uninstall          # remove Mira from the current folder
@@ -139,10 +144,11 @@ npx mira-animator uninstall          # remove Mira from the current folder
 | `install` | Installs Mira in the current folder (agents, templates, config) |
 | `link <path>` | Links a folder or file as a content source. Options: `--name=<alias>` `--type=projeto\|pdf\|latex\|texto` |
 | `sources` | Lists linked sources |
-| `new <name>` | Creates a new deck from a template. Options: `--deck=aula-capitulo\|pitch-projeto\|demo-tecnica` `--theme=mira-dark\|light-minimal\|corporate-blue\|neon-emerald` |
 | `status` | Shows install and deck state |
 | `update` | Updates agents and templates to the latest version |
 | `uninstall` | Removes Mira from the current folder |
+
+> Creating a deck is **not** a CLI command — you do it conversationally in Claude with `/mira-new` (see [Creating a deck](#creating-a-deck)).
 
 ---
 

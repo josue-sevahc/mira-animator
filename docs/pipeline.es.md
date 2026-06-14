@@ -37,10 +37,18 @@ Estos corren sobre un deck existente.
 
 | Agente | Qué hace |
 |---|---|
-| **mira-visuals** | Imágenes estáticas para slides: paneles, diagramas, gráficos e infografías. |
-| **mira-image-prompt** | Monta prompts JSON para generación de imagen fotorrealista. |
-| **mira-img-animator** | Anima una imagen existente. |
+| **mira-visuals** | Imágenes estáticas para slides: paneles, diagramas, gráficos e infografías. || **mira-img-animator** | Anima una imagen existente. |
 | **mira-chart** | Convierte datos en gráficos — a partir de CSV/JSON, de una imagen, o de un boceto a mano — y recomienda el mejor tipo de gráfico. |
+
+## Agentes de elementos en el slide
+
+Estos colocan un elemento específico dentro de un slide.
+
+| Agente | Qué hace |
+|---|---|
+| **mira-3d** | Añade un elemento 3D real (profundidad real, auto-rotación, arrastrar/zoom) en un card limpio, eligiendo CSS 3D, Three.js procedural o un `.glb` glTF. Un slide con `.glb` necesita un servidor HTTP local (el agente arranca uno y escribe un lanzador `abrir-slide.cmd`; necesita Node.js); CSS 3D y procedural se abren desde `file://`. |
+| **mira-qrcode** | Inserta un código QR grande, centrado y escaneable a partir de un enlace o texto, generado localmente e incrustado como SVG inline, así que funciona desde `file://` sin dependencia en tiempo de ejecución. |
+| **mira-image** | Coloca una imagen que ya tienes (archivo local o URL) en un slide, copiada a `assets/` y referenciada por una ruta relativa. Card limpio, imagen estática con el bucle en el marco. Funciona desde `file://` sin servidor. Para generar una imagen ver `mira-visuals`; para animar una ver `mira-img-animator`. |
 
 ## Agentes de apoyo
 
