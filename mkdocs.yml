@@ -25,6 +25,7 @@ theme:
         name: Switch to dark mode
   features:
     - navigation.sections
+    - navigation.indexes
     - navigation.top
     - search.suggest
     - search.highlight
@@ -83,6 +84,11 @@ plugins:
             CLI: CLI
             Agent pipeline: Pipeline de agentes
             Agents: Agentes
+            Core agents: Agentes core
+            Utility agents: Agentes úteis
+            Visuals & data: Agentes visuais e dados
+            Responsive agents: Agentes responsivos
+            Transitions: Agentes transições
             Video formats: Formatos de vídeo
             Themes and templates: Temas e templates
             Contributing: Contribuindo
@@ -98,6 +104,11 @@ plugins:
             CLI: CLI
             Agent pipeline: Pipeline de agentes
             Agents: Agentes
+            Core agents: Agentes core
+            Utility agents: Agentes útiles
+            Visuals & data: Agentes visuales y datos
+            Responsive agents: Agentes responsivos
+            Transitions: Agentes transiciones
             Video formats: Formatos de vídeo
             Themes and templates: Temas y plantillas
             Contributing: Contribuir
@@ -106,11 +117,15 @@ nav:
   - Home: index.md
   - Why Mira: por-que-mira.md
   - Installation: instalacao.md
-  - Linked sources: fontes.md
   - How to use: uso.md
-  - CLI: cli.md
   - Agent pipeline: pipeline.md
-  - Agents: agentes.md
+  - Core agents: agentes/core.md
+  - Utility agents: agentes/uteis.md
+  - Visuals & data: agentes/visuais.md
+  - Responsive agents: agentes/responsivos.md
+  - Transitions: agentes/transicoes.md
+  - Linked sources: fontes.md
+  - CLI: cli.md
   - Video formats: formatos.md
   - Themes and templates: temas.md
   - Contributing: contribuindo.md
