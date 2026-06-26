@@ -10,6 +10,7 @@ Esta pasta é uma instalação do **Mira**: agentes e templates para criar apres
 4. **Tema**: o tema padrão deste projeto é `{{DEFAULT_THEME}}`. Use SEMPRE as CSS variables do tema (`var(--mira-primary)` etc.) — nunca cores hardcoded. Temas em `mira-templates/themes/`.
 5. **Idioma**: siga `_shared/idioma.md` — todo texto visível em português brasileiro com acentuação 100% correta.
 6. **Templates**: blueprints de slides em `mira-templates/slides/`, decks completos em `mira-templates/decks/`, cards atômicos em `mira-builder/templates/` (dentro das skills).
+7. **Offline / firewall**: por padrão o deck carrega libs por CDN (Tailwind, AOS, Lucide, D3, fonte Inter). Se o usuário disser que o slide é bloqueado pelo firewall da empresa ou precisa rodar sem internet, use `/mira-offline` para deixar o deck self-contained (libs locais em `assets/vendor/`, abre por `file://`).
 
 ## Estrutura
 

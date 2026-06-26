@@ -11,5 +11,8 @@ site/
 # Notas/rascunhos locais
 no_permissions.md
 
+# Config local do Claude Code
+.claude/settings.local.json
+
 # Deck de apresentacao (mantido apenas local, contem videos pesados)
 decks/apresentacao-mira/

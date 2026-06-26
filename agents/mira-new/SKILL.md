@@ -41,9 +41,9 @@ Para os **templates built-in** (`aula-capitulo`, `pitch-projeto`, `demo-tecnica`
 npx mira-animator new <slug> --deck=<template> --theme=<tema-base>
 ```
 
-Isso cria `decks/<slug>/index.html` com o tema base já embutido (entre os marcadores `/* @MIRA:THEME:START */` e `/* @MIRA:THEME:END */`).
+Isso cria `decks/<slug>/index.html` com o tema base já embutido (entre os marcadores `/* @MIRA:THEME:START */` e `/* @MIRA:THEME:END */`). O comando **já deixa o deck offline por padrão**: copia as libs vendoradas (Tailwind, AOS, Lucide, D3, fonte Inter — embarcadas na instalação) para `decks/<slug>/assets/vendor/` e aponta o `<head>` para elas. O deck abre por `file://` sem internet e passa em firewall corporativo. Nada é baixado.
 
-> **Para templates ou temas criados pelo `/mira-image-template`** (e como fallback sem npx em qualquer caso): monte na mão a partir da cópia local. Copie `mira-templates/decks/<template>/index.html` para `decks/<slug>/index.html`, substitua o bloco entre os marcadores `@MIRA:THEME` pelo CSS de `mira-templates/themes/<tema>.css` seguido de `mira-templates/themes/base.css`, e adicione o deck em `mira.config.json` (`decks[]`). O CLI só conhece os três decks e quatro temas built-in, então templates/temas derivados de imagem **precisam** desta montagem local.
+> **Para templates ou temas criados pelo `/mira-image-template`** (e como fallback sem npx em qualquer caso): monte na mão a partir da cópia local. Copie `mira-templates/decks/<template>/index.html` para `decks/<slug>/index.html`, substitua o bloco entre os marcadores `@MIRA:THEME` pelo CSS de `mira-templates/themes/<tema>.css` seguido de `mira-templates/themes/base.css`, e adicione o deck em `mira.config.json` (`decks[]`). O CLI só conhece os três decks e quatro temas built-in, então templates/temas derivados de imagem **precisam** desta montagem local. **Depois de montar na mão, rode `node mira-templates/vendor/apply-offline.mjs decks/<slug>`** para deixar esse deck offline também (a montagem manual não passa pelo CLI, então não recebe o offline automático).
 
 ### Passo 3: Aplicar a cor principal custom (só se houver override)
 

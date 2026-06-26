@@ -21,7 +21,7 @@ No mínimo **rotacionar (arrastar) e dar zoom (scroll)**. Em Three.js use `Orbit
 
 - **Idioma:** siga `agents/_shared/idioma.md`. Texto visível em português correto, UTF-8 direto. **Proibido travessão (—):** use vírgula ou dois-pontos.
 - **Título:** sem ícone, no máximo 6 palavras, colado no topo (mesma estrutura do `agents/mira-animator/SKILL.md`).
-- **CDN no mesmo padrão dos decks** (`agents/mira-builder/templates/layout_base.html`): Tailwind, AOS e fontes por CDN. Three.js entra por `importmap` apontando para unpkg, como no slide de teste.
+- **Offline no mesmo padrão dos decks:** o deck do Mira nasce offline (libs locais em `assets/vendor/`, abre por `file://`). O Three.js segue a mesma regra: **vendore-o local** (ver "Vendorar o Three") e use o `importmap` apontando para `assets/vendor/three/`, **nunca** para unpkg. Um slide 3D com importmap de CDN quebra atrás de firewall, igual qualquer outra CDN.
 
 ## As três camadas (a skill escolhe, o usuário não)
 
@@ -94,15 +94,27 @@ Quando o usuário pedir um **objeto reconhecível** (cérebro, robô, livro) **s
 3. Validado na prática: Allen Human Brain Atlas via repositório `hubmapconsortium/ccf-releases` (pasta `v1.2/models`, CC BY 4.0).
 4. **Quando a busca não achar nada adequado, ou o usuário preferir escolher visualmente,** indique sites para ele baixar e fornecer o .glb: `sketchfab.com` (filtrar por downloadable + licença CC), `poly.pizza` (low-poly CC0/CC BY) e `hubmapconsortium/ccf-releases` (anatomia). Oriente a conferir licença e formato (.glb/.gltf) antes de baixar.
 
+## Vendorar o Three (offline é inegociável, igual ao resto do deck)
+
+Antes de inserir o slide 3D, **copie o Three vendorado para o deck** (uma vez por deck; se já existir, pule). A pasta já vem na instalação do Mira, em `mira-templates/vendor/three/` (core + `OrbitControls` + `GLTFLoader` + dep transitiva):
+
+```bash
+# da raiz do projeto; <deck> e a pasta do deck em decks/
+mkdir -p decks/<deck>/assets/vendor/three
+cp -r mira-templates/vendor/three/. decks/<deck>/assets/vendor/three/
+```
+
+Se o slide usar um addon **além** de OrbitControls/GLTFLoader, ele não está no bundle: baixe-o (com internet) para `assets/vendor/three/addons/<caminho>` preservando a estrutura, ou avise o usuário.
+
 ## Scaffold Three.js glTF (canônico, validado no teste)
 
-Base de cena já testada em `decks/teste-3d/index.html`: importmap do Three.js, `OrbitControls`, auto-rotate com retomada, pausa por `IntersectionObserver`, resize. Reuse este esqueleto e troque o caminho do `.glb` e o enquadramento da câmera.
+Base de cena já testada em `decks/teste-3d/index.html`: importmap do Three.js, `OrbitControls`, auto-rotate com retomada, pausa por `IntersectionObserver`, resize. Reuse este esqueleto e troque o caminho do `.glb` e o enquadramento da câmera. **O importmap aponta para a cópia local** (os addons preservam seus imports bare `'three'` / `'three/addons/...'`, que o próprio importmap resolve):
 
 ```html
 <script type="importmap">
 { "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    "three": "assets/vendor/three/three.module.js",
+    "three/addons/": "assets/vendor/three/addons/"
 } }
 </script>
 ```
@@ -164,11 +176,12 @@ Para a **camada procedural (2)**, o mesmo esqueleto de cena/luzes/controls/rende
 1. **Entender o pedido e escolher a camada.** Forma simples e geométrica → CSS 3D. Abstrato ou objeto montável de primitivas → procedural. `.glb` fornecido, ou objeto reconhecível em que o usuário aceita buscar um modelo → glTF.
 2. **Se for objeto reconhecível sem .glb:** ofereça procedural (sem servidor) ou busca de modelo na web (com servidor). Deixe o trade-off do servidor claro.
 3. **Localizar o destino.** Slide novo ou slide N do deck X, mesmo padrão de acionamento do mira-animator. Insira como uma `<section>` no padrão dos demais slides; preserve o sistema de navegação do deck.
-4. **Montar o slide:** card limpo, 3D maximizado, título sem ícone. Use o scaffold acima. Marque a atribuição em comentário HTML quando a licença exigir.
-5. **Se a camada for glTF (.glb local):**
+4. **Vendorar o Three (camadas procedural e glTF):** copie `mira-templates/vendor/three/` para `decks/<deck>/assets/vendor/three/` (pule se já existir). O importmap do slide aponta para essa cópia local, nunca para unpkg. (A camada CSS 3D pura não usa Three e dispensa este passo.)
+5. **Montar o slide:** card limpo, 3D maximizado, título sem ícone. Use o scaffold acima. Marque a atribuição em comentário HTML quando a licença exigir.
+6. **Se a camada for glTF (.glb local):**
    - a) Suba o servidor em segundo plano e **devolva o link** `http://localhost:8137/index.html` ao usuário, avisando do Node.
    - b) Gere o launcher **`abrir-slide.cmd`** na pasta do deck (e o `assets/README.md` com fonte/licença, se baixou modelo da web).
-6. **Reportar.** Diga: o caminho do arquivo; a camada escolhida e o loop em uma frase; se há servidor, o link e o lembrete do duplo-clique em `abrir-slide.cmd` para apresentar depois.
+7. **Reportar.** Diga: o caminho do arquivo; a camada escolhida e o loop em uma frase; se há servidor, o link e o lembrete do duplo-clique em `abrir-slide.cmd` para apresentar depois.
 
 ## Checklist
 
@@ -177,6 +190,7 @@ Para a **camada procedural (2)**, o mesmo esqueleto de cena/luzes/controls/rende
 - [ ] Card limpo: sem pílula de dica, sem atribuição visível; 3D maximizado no card.
 - [ ] Título sem ícone, no máximo 6 palavras, colado no topo.
 - [ ] Render pausa fora de tela (`IntersectionObserver`); resize tratado.
+- [ ] **Three vendorado:** `assets/vendor/three/` copiado e importmap apontando para ele; nenhum `unpkg`/CDN no importmap (deck 3D abre offline).
 - [ ] **Camada glTF (.glb):** servidor subido e link `http://localhost:...` entregue ao usuário; aviso do Node dado.
 - [ ] **Camada glTF (.glb):** launcher `abrir-slide.cmd` gerado na pasta do deck.
 - [ ] **Camadas CSS 3D / procedural:** confirmado que abrem em file:// (nenhum servidor exigido).

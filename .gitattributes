@@ -1,0 +1,4 @@
+# Bibliotecas vendoradas (modo offline): preservar byte a byte, sem conversao de
+# fim de linha entre plataformas. Sao copias exatas de upstream + fontes binarias.
+templates/vendor/** -text
+*.woff2 binary
