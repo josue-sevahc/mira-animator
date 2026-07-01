@@ -87,6 +87,7 @@ plugins:
             Core agents: Agentes core
             Utility agents: Agentes úteis
             Visuals & data: Agentes visuais e dados
+            Interactivity agents: Agentes de Interatividade
             Responsive agents: Agentes responsivos
             Transitions: Agentes transições
             Video formats: Formatos de vídeo
@@ -107,6 +108,7 @@ plugins:
             Core agents: Agentes core
             Utility agents: Agentes útiles
             Visuals & data: Agentes visuales y datos
+            Interactivity agents: Agentes de Interactividad
             Responsive agents: Agentes responsivos
             Transitions: Agentes transiciones
             Video formats: Formatos de vídeo
@@ -122,6 +124,7 @@ nav:
   - Core agents: agentes/core.md
   - Utility agents: agentes/uteis.md
   - Visuals & data: agentes/visuais.md
+  - Interactivity agents: agentes/interatividade.md
   - Responsive agents: agentes/responsivos.md
   - Transitions: agentes/transicoes.md
   - Linked sources: fontes.md

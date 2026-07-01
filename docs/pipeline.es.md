@@ -40,6 +40,7 @@ Estos corren sobre un deck existente.
 | **mira-visuals** | Imágenes estáticas para slides: paneles, diagramas, gráficos e infografías. |
 | **mira-img-animator** | Anima una imagen existente. |
 | **mira-chart** | Convierte datos en gráficos — a partir de CSV/JSON, de una imagen, o de un boceto a mano — y recomienda el mejor tipo de gráfico. |
+| **mira-chart-race** | Gráfico de carrera: datos temporales (CSV ancho) se reproducen una vez de principio a fin, barras que cambian de posición o líneas dibujadas en el tiempo. |
 | **mira-image-template** | Crea una nueva plantilla de deck a partir de imagen(es) — capturas de pantalla y/o un logo — reconociendo el design system y la disposición de los elementos, y la registra para que `mira-new` la use. |
 
 ## Agentes de elementos en el slide
@@ -51,6 +52,7 @@ Estos colocan un elemento específico dentro de un slide.
 | **mira-3d** | Añade un elemento 3D real (profundidad real, auto-rotación, arrastrar/zoom) en un card limpio, eligiendo CSS 3D, Three.js procedural o un `.glb` glTF. Un slide con `.glb` necesita un servidor HTTP local (el agente arranca uno y escribe un lanzador `abrir-slide.cmd`; necesita Node.js); CSS 3D y procedural se abren desde `file://`. |
 | **mira-qrcode** | Inserta un código QR grande, centrado y escaneable a partir de un enlace o texto, generado localmente e incrustado como SVG inline, así que funciona desde `file://` sin dependencia en tiempo de ejecución. |
 | **mira-survey** | Crea un slide de encuesta en vivo: un código QR para que el público vote en un Google Forms y un gráfico (donut 3D o barras) que se actualiza en tiempo real leyendo la planilla de respuestas vía el endpoint `gviz` por JSONP (funciona desde `file://`). Recibe el enlace de votación y el de la planilla; si falta uno, lo pide. |
+| **mira-quiz** | Crea un slide de quiz en vivo: código QR para que el público responda en Google Forms, lectura de la planilla vía `gviz` por JSONP, revelación de la respuesta correcta controlada por el presentador y porcentajes visibles solo después de revelar. |
 | **mira-image** | Coloca una imagen que ya tienes (archivo local o URL) en un slide, copiada a `assets/` y referenciada por una ruta relativa. Card limpio, imagen estática con el bucle en el marco. Funciona desde `file://` sin servidor. Para generar una imagen ver `mira-visuals`; para animar una ver `mira-img-animator`. |
 | **mira-svg-morph** | Genera un slide donde una forma SVG se transforma en otra en bucle continuo (GSAP + MorphSVGPlugin vendorados localmente). Pasas 2+ archivos `.svg`; 2 van y vuelven, N se encadenan. Incrusta los paths inline con ids únicos y corre `convertToPath`. Funciona desde `file://`. |
 | **mira-icon-morph** | El mismo morph a partir de conceptos en palabras: busca en la API de Iconify, valida la licencia (MIT/Apache/CC0/CC-BY), registra la atribución en `CREDITS.md` y rechaza IP protegida. Reaprovecha el núcleo de render de `mira-svg-morph`. |
@@ -73,5 +75,6 @@ Estos producen archivos extra al lado de tu deck sin tocar el original. Mira [Fo
 | **mira-vertical** | `index-9x16.html` | vertical 9:16 |
 | **mira-thirds** | `index-thirds.html` | regla de los tercios |
 | **mira-transition-dissolve** | `index-dissolve.html` | transición disolvencia |
+| **mira-slide-to-video** | `deck.mp4` | video MP4 de la animación real de los slides |
 
 Para la descripción completa de cada agente, mira [Agentes](agentes.md).

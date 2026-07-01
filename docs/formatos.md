@@ -1,6 +1,6 @@
 # Video formats
 
-One 16:9 deck is the source of truth. From it, Mira generates extra files for other aspect ratios and transitions — **without ever touching the original**. Each format agent writes a new file next to `index.html`.
+One 16:9 deck is the source of truth. From it, Mira generates extra files for other aspect ratios, transitions and video — **without ever touching the original**. Each format agent writes a new file next to `index.html`.
 
 ```
 decks/my-talk/
@@ -8,7 +8,8 @@ decks/my-talk/
 ├── index-1x1.html          # mira-squared
 ├── index-9x16.html         # mira-vertical
 ├── index-thirds.html       # mira-thirds
-└── index-dissolve.html     # mira-transition-dissolve
+├── index-dissolve.html     # mira-transition-dissolve
+└── talk.mp4                # mira-slide-to-video
 ```
 
 ## Square — `/mira-squared`
@@ -42,6 +43,14 @@ Because it is same-document, it works straight from `file://` with no server (Ch
 
 → `index-dissolve.html`
 
+## Slide to video: `/mira-slide-to-video`
+
+Renders one or more slides into a single **`.mp4`**, the real animation and not a screenshot. It opens the deck in **headless Chrome**, records each slide in real time (the animation starts from zero, with no leak from the previous slide, framed to fill the frame) and stitches the clips with **ffmpeg**. You pick which slide or slides go in and the resolution (16:9, 9:16 or 1:1); with more than one slide it chains them with a crossfade, 4 seconds per slide by default. Slides with a **finite** animation, like `mira-chart-race`, play in full. The original deck is never touched.
+
+For a vertical or square video that truly fills the frame, record the deck already adapted to the format: the `index-9x16.html` from `mira-vertical` or the `index-1x1.html` from `mira-squared`. It needs **ffmpeg** on the PATH plus `puppeteer` and `puppeteer-screen-recorder`, installed on demand.
+
+→ `deck.mp4`
+
 ## Recording tip
 
-To turn any of these into a video, open the file and screen-record with the browser viewport set to the format's resolution (1920×1080, 1080×1080, or 1080×1920). The internal loops keep every slide alive while you record.
+The automatic way to turn any of these into a video is `/mira-slide-to-video` (above). To do it by hand, open the file and screen-record with the browser viewport set to the format's resolution (1920×1080, 1080×1080, or 1080×1920). The internal loops keep every slide alive while you record.

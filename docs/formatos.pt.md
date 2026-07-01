@@ -1,6 +1,6 @@
 # Formatos de vídeo
 
-Um deck 16:9 é a fonte de verdade. A partir dele, o Mira gera arquivos extras para outras proporções e transições — **sem nunca tocar no original**. Cada agente de formato escreve um novo arquivo ao lado do `index.html`.
+Um deck 16:9 é a fonte de verdade. A partir dele, o Mira gera arquivos extras para outras proporções, transições e vídeo — **sem nunca tocar no original**. Cada agente de formato escreve um novo arquivo ao lado do `index.html`.
 
 ```
 decks/minha-aula/
@@ -8,7 +8,8 @@ decks/minha-aula/
 ├── index-1x1.html          # mira-squared
 ├── index-9x16.html         # mira-vertical
 ├── index-thirds.html       # mira-thirds
-└── index-dissolve.html     # mira-transition-dissolve
+├── index-dissolve.html     # mira-transition-dissolve
+└── aula.mp4                # mira-slide-to-video
 ```
 
 ## Quadrado — `/mira-squared`
@@ -42,6 +43,14 @@ Por ser same-document, funciona direto do `file://` sem servidor (Chrome/Edge). 
 
 → `index-dissolve.html`
 
+## Slide em vídeo: `/mira-slide-to-video`
+
+Renderiza um ou mais slides num único **`.mp4`**, a animação real e não um print. Abre o deck no **Chrome headless**, grava cada slide em tempo real (a animação começa do zero, sem vazar o slide anterior, enquadrada preenchendo o frame) e junta os clipes com **ffmpeg**. Você escolhe quais slides entram e a resolução (16:9, 9:16 ou 1:1); com mais de um slide, encadeia com um crossfade, 4 segundos por slide por padrão. Slides com animação **finita**, como o `mira-chart-race`, tocam por inteiro. O deck original nunca é tocado.
+
+Para um vídeo vertical ou quadrado que preenche o frame de verdade, grave o deck já adaptado ao formato: o `index-9x16.html` do `mira-vertical` ou o `index-1x1.html` do `mira-squared`. Precisa de **ffmpeg** no PATH mais `puppeteer` e `puppeteer-screen-recorder`, instalados sob demanda.
+
+→ `deck.mp4`
+
 ## Dica de gravação
 
-Para transformar qualquer um desses em vídeo, abra o arquivo e grave a tela com a viewport do navegador ajustada à resolução do formato (1920×1080, 1080×1080 ou 1080×1920). Os loops internos mantêm cada slide vivo enquanto você grava.
+O jeito automático de transformar qualquer um desses em vídeo é o `/mira-slide-to-video` (acima). Para fazer à mão, abra o arquivo e grave a tela com a viewport do navegador ajustada à resolução do formato (1920×1080, 1080×1080 ou 1080×1920). Os loops internos mantêm cada slide vivo enquanto você grava.

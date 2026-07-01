@@ -40,6 +40,7 @@ These run on top of an existing deck.
 | **mira-visuals** | Static images for slides: panels, diagrams, charts and infographics. |
 | **mira-img-animator** | Animates an existing image. |
 | **mira-chart** | Turns data into charts — from CSV/JSON, from an image, or from a hand-drawn sketch — and recommends the best chart type. |
+| **mira-chart-race** | Racing chart: temporal data (wide CSV) animates once from start to end, bars swapping rank or lines drawn over time. |
 | **mira-image-template** | Builds a new deck template from image(s) — screenshots and/or a logo — recognizing the design system and the element layout, and registers it for `mira-new` to use. |
 
 ## On-slide element agents
@@ -51,6 +52,7 @@ These drop a specific element into a slide.
 | **mira-3d** | Adds a true 3D element (real depth, auto-rotation, drag/zoom) in a clean card, choosing CSS 3D, procedural Three.js or a glTF `.glb`. A `.glb` slide needs a local HTTP server (the agent starts one and writes an `abrir-slide.cmd` launcher; needs Node.js); CSS 3D and procedural open from `file://`. |
 | **mira-qrcode** | Inserts a large, centered, scannable QR code from a link or text, generated locally and embedded as inline SVG, so it works from `file://` with no runtime dependency. |
 | **mira-survey** | Builds a live poll slide: a QR code for the audience to vote on a Google Form and a chart (3D donut or bars) that updates in real time by reading the responses spreadsheet via the `gviz` endpoint over JSONP (works from `file://`). Takes the voting link and the spreadsheet link; if one is missing, it asks. |
+| **mira-quiz** | Builds a live quiz slide: QR code for the audience to answer in Google Forms, spreadsheet reading via `gviz` over JSONP, presenter-controlled correct-answer reveal, and percentages shown only after reveal. |
 | **mira-image** | Places an image you already have (local file or URL) into a slide, copied into `assets/` and referenced by a relative path. Clean card, image static with the loop on the frame. Works from `file://` with no server. To generate an image see `mira-visuals`; to animate one see `mira-img-animator`. |
 | **mira-svg-morph** | Generates a slide where one SVG shape morphs into another in a continuous loop (GSAP + MorphSVGPlugin vendored locally). You pass 2+ `.svg` files; 2 go back and forth, N chain. Inlines the paths with unique ids and runs `convertToPath`. Works from `file://`. |
 | **mira-icon-morph** | The same morph from concepts in words: searches the Iconify API, validates the license (MIT/Apache/CC0/CC-BY), records attribution in `CREDITS.md`, and refuses protected IP. Reuses the render core of `mira-svg-morph`. |
@@ -73,5 +75,6 @@ These produce extra files next to your deck without touching the original. See [
 | **mira-vertical** | `index-9x16.html` | 9:16 vertical |
 | **mira-thirds** | `index-thirds.html` | rule of thirds |
 | **mira-transition-dissolve** | `index-dissolve.html` | dissolve transition |
+| **mira-slide-to-video** | `deck.mp4` | MP4 video of the slides' real animation |
 
 For the full description of each agent, see [Agents](agentes.md).

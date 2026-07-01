@@ -8,6 +8,9 @@ Static images for slides: panels, diagrams, charts and infographics — when a c
 ## `/mira-chart`
 Turns data into charts with impact: from a CSV/JSON, from an image of a chart, or from a hand-drawn sketch — and recommends the best chart type from a gallery.
 
+## `/mira-chart-race`
+Turns temporal data into an **animated race**: from a wide-format CSV (the first column is the period, the others are the series), it builds a slide where time runs on screen and the chart animates once to the end. Two modes to choose from: **bars** that swap rank position each period, or **lines** drawn progressively with the label chasing the tip. The data stays embedded in the slide (no `fetch`), so it runs from `file://` and offline. For a static chart use `/mira-chart`.
+
 ## `/mira-qrcode`
 Inserts a large, centered, scannable **QR code** into a slide, generated from a link or text you provide. The QR is generated **locally** at build time (the `qrcode` npm package) and embedded as an inline SVG, with no runtime dependency, no external API and no CDN, so the slide works even from `file://`. Clean card, same pattern as `mira-3d`: just the slide title and the big QR, with no link caption underneath. Scannability drives the style: dark modules on a white card, quiet zone preserved, orange only on the frame and title. The QR stays static: the internal loop lives in the frame (glow pulse, breathing corners), never over the modules.
 
@@ -16,9 +19,6 @@ Adds a **true 3D element** to a slide's canvas (real depth, continuous auto-rota
 
 !!! warning "The glTF layer needs a server"
     A slide that loads a local `.glb` does **not** open from `file://` (the browser blocks the model fetch), only over HTTP. In that case the agent starts a local server, hands you the `http://localhost` link, and writes a double-click launcher (`abrir-slide.cmd`) so you can present later. This layer needs **Node.js** installed. The CSS 3D and procedural layers use no local asset and open straight from `file://`, with no server.
-
-## `/mira-survey`
-Builds a **live poll** slide: the audience scans a QR code, votes on a Google Form, and the result updates in **real time** on the slide (a spinning 3D donut by default, or a bar chart). It takes two links, the **voting** link (`forms.gle/...`, which becomes the QR generated locally as inline SVG) and the **responses spreadsheet** link (`docs.google.com/spreadsheets/...`, from which the slide reads the tally). It reads the `gviz` endpoint via JSONP every few seconds, so it works even from `file://` with no CORS error; it never uses "Publish to web → CSV" (cached for ~5 min). The spreadsheet must be public (anyone with the link → Viewer). If a link is missing, the agent asks before generating. For a QR without voting use `/mira-qrcode`; for a static data chart use `/mira-chart`.
 
 ## `/mira-svg-morph`
 Generates a slide where one SVG shape **morphs into another**, in a continuous loop, with GSAP + MorphSVGPlugin vendored locally (the deck runs offline, from `file://`). You point it at 2 or more `.svg` files in the deck's `assets/`, in morph order: 2 SVGs go back and forth, N SVGs chain (A into B into C ... back to A). It inlines the `<path>`s with unique ids (no collision between several SVGs in one document), runs `convertToPath` on non-path shapes, and builds the loop. Clean card, same pattern as `mira-3d`: just the title and the shape morphing large and centered, in orange #FF904D. MorphSVG morphs path into path (not whole SVG into whole SVG): multi-path morphs pair by pair, only the silhouette morphs, and it is cleanest when both SVGs share the same viewBox. For dense or emergent metaphors (particles, explosions) use `mira-animator` instead.

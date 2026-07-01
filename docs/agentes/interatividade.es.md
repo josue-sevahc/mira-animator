@@ -1,0 +1,9 @@
+# Agentes de Interactividad
+
+Slides con los que el público interactúa. Hoy eso significa encuestas y quizzes en vivo: la sala escanea un código QR, responde en un Google Forms, y el slide se actualiza en **tiempo real** leyendo la planilla de respuestas por el endpoint `gviz` por JSONP, así que funciona incluso desde `file://`, siempre que haya internet y la planilla esté pública.
+
+## `/mira-survey`
+Crea un slide de **encuesta en vivo**: el público escanea un código QR, vota en un Google Forms, y el resultado se actualiza en **tiempo real** en el slide (un donut 3D girando por defecto, o un gráfico de barras). Recibe dos enlaces, el de **votación** (`forms.gle/...`, que se vuelve el QR generado localmente como SVG inline) y el de la **planilla de respuestas** (`docs.google.com/spreadsheets/...`, de donde el slide lee el conteo). Lee el endpoint `gviz` por JSONP cada pocos segundos, así que funciona incluso desde `file://` sin error de CORS; nunca usa "Publicar en la web → CSV" (cacheado por ~5 min). La planilla debe estar pública (cualquiera con el enlace → Lector). Si falta un enlace, el agente lo pide antes de generar. Para un QR sin votación usa `/mira-qrcode`; para un gráfico de datos estáticos usa `/mira-chart`.
+
+## `/mira-quiz`
+Crea un slide de **quiz en vivo**: el público escanea un código QR, responde una pregunta de opción múltiple en Google Forms, y el slide lee la planilla de respuestas en vivo vía `gviz` + JSONP. La respuesta correcta queda oculta hasta que el presentador pulse **Revelar** o presione `R`; recién entonces el card correcto aparece en verde suave, los porcentajes y conteos por alternativa entran con barras animadas, y un ranking básico de aciertos puede alternarse con `K`. Recibe enlace de votación, enlace de la planilla, pregunta, alternativas y respuesta correcta. Para una encuesta sin respuesta correcta usa `/mira-survey`.
