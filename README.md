@@ -79,6 +79,12 @@ You can spell out the template and theme in the same sentence:
 
 Then, in Claude: *"fill the deck my-class with content from the reversa source"*.
 
+### Reordering slides (edit mode)
+
+Every deck ships with a built-in edit mode. Open the deck and press **`E`** (or add `?edit=1` to the URL): each slide gets ↑ ↓ arrows to change its order. **Save** writes the new order back into `index.html` on disk, reordering the source blocks between the `<!-- SLIDE -->` markers without touching the animations.
+
+Saving works two ways: over `file://` it uses the browser's file picker (Chrome/Edge); for silent saves, serve the folder with `node mira-serve.js decks/<name>` and the order is written straight to disk. To add edit mode to an older deck that predates this feature, run `npx mira-animator edit <deck>`.
+
 ---
 
 ## Agent pipeline
@@ -138,6 +144,8 @@ Three layers under `templates/`:
 npx mira-animator install            # install Mira in the current folder
 npx mira-animator link <path>        # link a content source (--name, --type)
 npx mira-animator sources            # list linked sources
+npx mira-animator new <name>         # create a deck from a template
+npx mira-animator edit <deck>        # turn on edit mode (reorder slides) on an existing deck
 npx mira-animator status             # show install and deck state
 npx mira-animator update             # update agents and templates
 npx mira-animator uninstall          # remove Mira from the current folder

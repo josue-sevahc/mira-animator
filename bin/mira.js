@@ -15,6 +15,7 @@ const commands = {
   link:      () => import('../lib/commands/link.js'),
   sources:   () => import('../lib/commands/sources.js'),
   new:       () => import('../lib/commands/new.js'),
+  edit:      () => import('../lib/commands/edit.js'),
   status:    () => import('../lib/commands/status.js'),
   update:    () => import('../lib/commands/update.js'),
   uninstall: () => import('../lib/commands/uninstall.js'),
@@ -34,6 +35,7 @@ if (!command || command === '--help' || command === '-h') {
     new <nome>           Cria um novo deck a partir de um template
                          Opções: --deck=aula-capitulo|pitch-projeto|demo-tecnica|sandeco-just-animation-template
                                  --theme=mira-dark|light-minimal|corporate-blue|neon-emerald
+    edit <deck>          Liga o modo edição (reordenar slides, tecla E) num deck já existente
     status               Mostra o estado da instalação e dos decks
     update               Atualiza agents e templates para a última versão
     uninstall            Remove o Mira da pasta atual
