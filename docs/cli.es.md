@@ -14,6 +14,7 @@ npx mira-animator --version      # muestra la versión
 | `install` | Instala Mira en la carpeta actual (agentes, plantillas, config). |
 | `link <ruta>` | Vincula una carpeta o archivo como fuente de contenido. |
 | `sources` | Lista las fuentes vinculadas. |
+| `edit <deck>` | Activa el **modo edición** (reordenar slides, tecla E) en un deck existente. |
 | `status` | Muestra el estado de la instalación y los decks. |
 | `update` | Actualiza agentes y plantillas a la última versión. |
 | `uninstall` | Elimina Mira de la carpeta actual. |
@@ -67,6 +68,14 @@ Monta `decks/<nombre>/` a partir de una plantilla y registra el deck. Puedes ind
 |---|---|
 | Plantilla | `aula-capitulo`, `pitch-projeto`, `demo-tecnica`, `sandeco-just-animation-template` |
 | Tema | `mira-dark`, `light-minimal`, `corporate-blue`, `neon-emerald` |
+
+## `edit`
+
+```bash
+npx mira-animator edit <deck>
+```
+
+Aplica el **modo edición** (reordenar slides) a un deck que ya existe: copia `mira-edit.js` a la carpeta del deck e inyecta el script antes de `</body>`. Abre el deck y pulsa **E** para reordenar, luego guarda. Los decks nuevos ya vienen con él. Mira [Agentes útiles](agentes/uteis.md) para saber cómo funcionan el reorder y el guardado.
 
 ## `status`
 

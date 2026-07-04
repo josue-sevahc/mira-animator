@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mira — Quadro tático: Real Madrid x Barcelona</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:#0e0f12;color:#fff;font-family:Inter,system-ui,sans-serif;overflow:hidden}
+  #stage{position:fixed;inset:0}
+  #tk-canvas{position:absolute;inset:0;touch-action:none;display:block}
+  /* título discreto do slide */
+  /* título centralizado no topo, em caixa alta */
+  #tk-title{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:5;text-align:center;pointer-events:none}
+  #tk-title .eyebrow{color:#FF904D;font-size:13px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+  #tk-title h1{font-size:27px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;margin-top:2px;text-shadow:0 2px 16px rgba(0,0,0,.8)}
+  /* placar de times (legenda) */
+  #tk-teams{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:5;display:flex;gap:22px;
+    padding:9px 18px;border-radius:999px;background:rgba(16,16,16,.82);backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,.12)}
+  #tk-teams .t{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px}
+  #tk-teams .swatch{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.85)}
+  /* barra de edição (aparece com a tecla T) — mesma estética do mira-tactics/mira-draw */
+  #tk-bar{position:fixed;left:16px;top:50%;transform:translate(-140%,-50%);z-index:10;display:flex;flex-direction:column;
+    align-items:stretch;gap:6px;padding:10px;border-radius:18px;background:rgba(16,16,16,.92);backdrop-filter:blur(14px);
+    border:1px solid rgba(255,144,77,.35);box-shadow:0 18px 50px rgba(0,0,0,.5);opacity:0;
+    transition:transform .28s ease,opacity .28s ease}
+  body.tk-edit #tk-bar{transform:translate(0,-50%);opacity:1}
+  .tk-tool{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:12px;border:none;
+    cursor:pointer;color:#fff;background:rgba(255,255,255,.06);transition:all .15s ease}
+  .tk-tool:hover{background:rgba(255,255,255,.14)}
+  .tk-tool.tk-active{color:#101010;background:#FF904D}
+  .tk-sep{height:1px;margin:4px 2px;background:rgba(255,255,255,.12)}
+  .tk-teamsel{display:flex;flex-direction:column;gap:5px;padding:2px}
+  .tk-tsw{display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:9px;border:none;cursor:pointer;
+    background:rgba(255,255,255,.06);color:#fff;font:700 12px Inter,sans-serif;text-align:left}
+  .tk-tsw:hover{background:rgba(255,255,255,.14)}
+  .tk-tsw.tk-active{background:rgba(255,144,77,.22);box-shadow:inset 0 0 0 1px #FF904D}
+  .tk-tsw i{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.85);flex:none}
+  .tk-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:2px}
+  .tk-csw{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.2);transition:transform .12s ease}
+  .tk-csw:hover{transform:scale(1.15)}
+  .tk-csw.tk-active{border-color:#fff;box-shadow:0 0 0 2px #FF904D}
+  /* pílula de dica */
+  #tk-hint{position:fixed;left:50%;top:56px;transform:translateX(-50%);z-index:10;display:none;align-items:center;gap:8px;
+    padding:8px 14px;border-radius:999px;background:rgba(16,16,16,.9);border:1px solid rgba(255,144,77,.35);
+    color:rgba(255,255,255,.85);font:600 12px/1 Inter,system-ui,sans-serif}
+  body.tk-edit #tk-hint{display:flex}
+  #tk-hint b{color:#FF904D}
+  .tk-edit-pop{position:fixed;z-index:30;display:flex;gap:5px;transform:translateX(-50%)}
+  .tk-edit-pop input{background:rgba(16,16,16,.94);border:1px solid #FF904D;border-radius:8px;outline:none;
+    padding:3px 8px;color:#fff;font:800 13px Inter,sans-serif}
+  .tk-numinput{width:48px;text-align:center}
+  .tk-nameinput2{width:150px}
+  /* dica permanente no canto */
+  #tk-help{position:fixed;right:14px;bottom:16px;z-index:5;color:rgba(255,255,255,.45);font:600 12px Inter,sans-serif}
+  #tk-help b{color:rgba(255,255,255,.7)}
+</style>
+</head>
+<body>
+  <div id="stage"><canvas id="tk-canvas"></canvas></div>
+  <div id="tk-title"><div class="eyebrow" id="tk-eyebrow">Quadro tático</div><h1 id="tk-h1"></h1></div>
+  <div id="tk-teams"></div>
+  <div id="tk-help"><b>T</b> ferramentas · <b>V</b> vira</div>
+
+<script>
+/* =====================================================================
+   Quadro tático do Mira — motor de cenário (self-contained, canvas vanilla)
+   ---------------------------------------------------------------------
+   Lê a CONFIG (TACTICS) e desenha o campo/quadra do esporte, com os times
+   posicionados na formação. Cada jogador é um círculo na cor do time, com
+   o NÚMERO no centro; CLICAR no jogador revela o NOME. Goleiro tem cor de
+   uniforme própria. Modo edição (tecla T): mover, adicionar, apagar peças
+   e desenhar setas. Tecla V inverte o campo (horizontal <-> vertical).
+
+   Coordenadas de CAMPO: cada peça guarda (fx, fy) onde fx corre no
+   COMPRIMENTO do campo (0 = gol de um lado, 1 = gol do outro) e fy corre
+   na LARGURA (0..1). A orientação decide o mapeamento para a tela, então a
+   MESMA formação serve para horizontal e vertical (vertical = girar 90°).
+   ===================================================================== */
+
+/* ====================== CONFIG (preenchida pela skill) ================= */
+/* REGRA: formação, titulares E posições do XI que COMEÇOU o ÚLTIMO JOGO de
+   cada time (fim da temporada 2025-26), validados em fonte oficial/local.
+   - Real Madrid 4-3-3 x Athletic Club (23/05/2026, Bernabéu, jornada 38).
+     Fonte OFICIAL: realmadrid.com. Gonzalo ponta direita, Mastantuono ponta
+     esquerda, Mbappé centroavante. (Título já decidido: houve algum rodízio.)
+   - Barcelona 4-2-3-1, Valencia 3 x 1 Barcelona (23/05/2026, Mestalla,
+     jornada 38). Ferran ponta direita, Rashford ponta esquerda, Lewandowski
+     centroavante. Fontes: analiticafantasy (confirmadas), fcbarcelona.com.
+     (Título já ganho: time bem rodado — Szczęsny no gol.)
+   Convenção: liste os 'players' na ordem da formação e da ESQUERDA para a
+   DIREITA do próprio time. O motor orienta cada time para o seu ataque, então
+   a ponta esquerda de cada um cai no lado certo do campo.
+   Aproximados: nº do Koundé (#23) e cores de goleiro (Courtois/Szczęsny). */
+var TACTICS = {
+  sport: 'futebol',
+  orientation: 'horizontal',      // 'horizontal' | 'vertical'
+  eyebrow: '',                    // vazio = sem linha de cima; preencha só se o usuário pedir
+  title: 'Real Madrid x Barcelona', // exibido em CAIXA ALTA, centralizado no topo
+  teams: [
+    {
+      name: 'Real Madrid', color: '#F5F5F5', goalie: '#202020',
+      formation: '4-3-3', side: 'left',
+      players: [                              // ordem da formação, da ESQUERDA p/ a DIREITA
+        { num:'1',  name:'Courtois', gk:true },
+        { num:'18', name:'Á. Carreras' },       // lateral esquerdo
+        { num:'4',  name:'Alaba' },             // zagueiro (esq)
+        { num:'17', name:'Asencio' },           // zagueiro (dir)
+        { num:'2',  name:'Carvajal' },          // lateral direito
+        { num:'45', name:'Thiago' },            // meio (esq)
+        { num:'5',  name:'Bellingham' },        // meio (centro)
+        { num:'8',  name:'Valverde' },          // meio (dir)
+        { num:'30', name:'Mastantuono' },       // ponta ESQUERDA
+        { num:'10', name:'Mbappé' },            // centroavante
+        { num:'16', name:'Gonzalo' }            // ponta DIREITA
+      ]
+    },
+    {
+      name: 'Barcelona', color: '#A50044', goalie: '#F2C14E',
+      formation: '4-2-3-1', side: 'right',
+      players: [                              // ordem da formação, da ESQUERDA p/ a DIREITA
+        { num:'25', name:'Szczęsny', gk:true },
+        { num:'3',  name:'Balde' },             // lateral esquerdo
+        { num:'4',  name:'Araújo' },            // zagueiro (esq)
+        { num:'18', name:'Gerard Martín' },     // zagueiro (dir)
+        { num:'23', name:'Koundé' },            // lateral direito (nº aprox.)
+        { num:'22', name:'Bernal' },            // volante (esq)
+        { num:'6',  name:'Gavi' },              // volante (dir)
+        { num:'14', name:'Rashford' },          // ponta ESQUERDA
+        { num:'20', name:'Dani Olmo' },         // meia armador
+        { num:'7',  name:'Ferran' },            // ponta DIREITA
+        { num:'9',  name:'Lewandowski' }        // centroavante
+      ]
+    }
+  ],
+  arrows: []
+};
+/* ====================================================================== */
+
+(function () {
+  'use strict';
+  var ACCENT = '#FF904D';
+
+  /* esportes: nº de jogadores e superfície */
+  var SPORTS = {
+    futebol:  { players: 11, surface: 'grass', boxes: true,  circle: true, arcs: false, net: false },
+    futsal:   { players: 5,  surface: 'court', boxes: true,  circle: true, arcs: false, net: false },
+    handebol: { players: 7,  surface: 'court', boxes: true,  circle: true, arcs: true,  net: false },
+    basquete: { players: 5,  surface: 'wood',  boxes: 'key', circle: true, arcs: true,  net: false },
+    volei:    { players: 6,  surface: 'sand',  boxes: false, circle: false, arcs: false, net: true },
+    generico: { players: 6,  surface: 'court', boxes: false, circle: true, arcs: false, net: false }
+  };
+  var SURFACE_FILL = { grass:['#2f8f4e','#27793f'], court:['#22303f','#1b2733'], wood:['#b9824e','#a5713f'], sand:['#c9a45c','#b8924a'] };
+
+  /* formações de futebol: posições na metade do time [fx 0..0.5, fy 0..1] */
+  var FORMATIONS = {
+    '4-3-3': [[.05,.5],[.18,.16],[.18,.38],[.18,.62],[.18,.84],[.30,.30],[.30,.5],[.30,.70],[.43,.22],[.43,.5],[.43,.78]],
+    '4-4-2': [[.05,.5],[.18,.16],[.18,.38],[.18,.62],[.18,.84],[.32,.14],[.32,.40],[.32,.60],[.32,.86],[.44,.38],[.44,.62]],
+    '3-5-2': [[.05,.5],[.18,.26],[.18,.5],[.18,.74],[.31,.10],[.31,.32],[.31,.5],[.31,.68],[.31,.90],[.44,.40],[.44,.60]],
+    '4-2-3-1':[[.05,.5],[.18,.16],[.18,.38],[.18,.62],[.18,.84],[.28,.38],[.28,.62],[.38,.22],[.38,.5],[.38,.78],[.46,.5]]
+  };
+  /* posições genéricas por quadra (metade), usadas fora do futebol */
+  var GRIDS = {
+    5: [[.06,.5],[.22,.28],[.22,.72],[.40,.36],[.40,.64]],
+    6: [[.08,.25],[.08,.75],[.26,.5],[.40,.25],[.40,.75],[.30,.5]],
+    7: [[.05,.5],[.20,.22],[.20,.5],[.20,.78],[.38,.30],[.38,.5],[.38,.70]]
+  };
+
+  /* ---------- estado ---------- */
+  var canvas, ctx, dpr = 1, W = 0, H = 0;
+  var sport = TACTICS.sport || 'futebol';
+  var orientation = TACTICS.orientation || 'horizontal';
+  var pieces = [];      // { teamIdx, num, name, gk, fx, fy }
+  var arrows = [];      // { x0,y0,x1,y1, color }  (coords de campo)
+  var shapes = [];      // { type:'rect'|'ellipse', x0,y0,x1,y1, color } zonas destacadas
+  var selected = [];    // ids das peças selecionadas (multi-seleção)
+  var pieceUid = 0;     // id incremental por peça (estável a add/remover)
+  var arrowColor = ACCENT;  // cor atual de setas e zonas (escolhida na paleta)
+  var editing = false, tool = 'select', curTeam = 0;
+  var dragging = null, pressPiece = -1, pressXY = null, current = null, curShape = null, marquee = null, nameInput = null;
+  var history = [];
+  var PALETTE = ['#FF904D','#ffffff','#ffd24d','#ff5a5a','#4d9fff','#55d18e','#101010','#c07bff'];
+
+  /* helpers de cor e seleção */
+  function darken(hex,f){ var h=hex.replace('#',''); if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    var r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
+    return 'rgb('+Math.round(r*(1-f))+','+Math.round(g*(1-f))+','+Math.round(b*(1-f))+')'; }
+  function rgba(hex,a){ var h=hex.replace('#',''); if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    return 'rgba('+parseInt(h.substr(0,2),16)+','+parseInt(h.substr(2,2),16)+','+parseInt(h.substr(4,2),16)+','+a+')'; }
+  function selHas(id){ return selected.indexOf(id)>=0; }
+  function selToggle(id){ var k=selected.indexOf(id); if(k>=0)selected.splice(k,1); else selected.push(id); }
+  function selClear(){ if(selected.length){ selected=[]; return true; } return false; }
+
+  /* ---------- ícones ---------- */
+  function icon(p){ return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>'; }
+  var IC = {
+    move:'<path d="M5 9 2 12l3 3"/><path d="M9 5l3-3 3 3"/><path d="M15 19l-3 3-3-3"/><path d="M19 9l3 3-3 3"/><path d="M2 12h20"/><path d="M12 2v20"/>',
+    marquee:'<path d="M4 8V6a2 2 0 0 1 2-2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M20 16v2a2 2 0 0 1-2 2h-2"/><path d="M8 20H6a2 2 0 0 1-2-2v-2"/>',
+    add:'<circle cx="12" cy="12" r="9"/><path d="M12 8v8"/><path d="M8 12h8"/>',
+    arrow:'<path d="M5 19 19 5"/><path d="M10 5h9v9"/>',
+    rect:'<rect x="4" y="5" width="16" height="14" rx="2"/>',
+    ellipse:'<circle cx="12" cy="12" r="8"/>',
+    erase:'<path d="m7 21-4.3-4.3a1 1 0 0 1 0-1.4l9.6-9.6a1 1 0 0 1 1.4 0l4.6 4.6a1 1 0 0 1 0 1.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>',
+    flip:'<path d="M12 3v18"/><path d="M16 7l4 5-4 5"/><path d="M8 7l-4 5 4 5"/>',
+    undo:'<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-1"/>',
+    trash:'<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/>',
+    x:'<path d="M18 6 6 18"/><path d="M6 6l12 12"/>'
+  };
+
+  /* ---------- montar peças a partir da CONFIG ---------- */
+  function buildPieces() {
+    pieces = [];
+    TACTICS.teams.forEach(function (team, ti) {
+      var isFut = (SPORTS[sport] || SPORTS.generico).surface === 'grass' || sport === 'futebol' || sport === 'futsal';
+      var pos = FORMATIONS[team.formation] || GRIDS[team.players ? team.players.length : (team.players||[]).length] || GRIDS[5];
+      var half = pos;
+      team.players.forEach(function (p, i) {
+        var base = half[i % half.length];
+        var fxHalf = base[0];
+        // time da esquerda ocupa fx 0..0.5; direita espelha para 0.5..1.
+        // como o time da direita ataca para o lado oposto, espelha também o eixo
+        // lateral (fy) para a ponta esquerda de cada time cair no lado certo.
+        var fx = (team.side === 'right') ? (1 - fxHalf) : fxHalf;
+        var fy = (team.side === 'right') ? (1 - base[1]) : base[1];
+        pieces.push({ id: pieceUid++, teamIdx: ti, num: p.num || String(i + 1), name: p.name || '', gk: !!p.gk, fx: fx, fy: fy });
+      });
+    });
+    arrows = (TACTICS.arrows || []).slice();
+    shapes = (TACTICS.shapes || []).slice();
+  }
+
+  /* ---------- geometria campo <-> tela ---------- */
+  function fieldRect() {
+    var pad = Math.min(W, H) * 0.06;
+    var availW = W - pad * 2, availH = H - pad * 2;
+    // proporção comprimento:largura por esporte
+    var ratio = (sport === 'basquete') ? 1.78 : (sport === 'volei') ? 2.0 : 1.55; // comprimento/largura
+    var lengthHoriz = (orientation === 'horizontal');
+    var w, h;
+    if (lengthHoriz) { // comprimento na horizontal
+      w = availW; h = w / ratio;
+      if (h > availH) { h = availH; w = h * ratio; }
+    } else {           // comprimento na vertical
+      h = availH; w = h / ratio;
+      if (w > availW) { w = availW; h = w * ratio; }
+    }
+    return { x: (W - w) / 2, y: (H - h) / 2, w: w, h: h };
+  }
+  // fx = comprimento (0..1), fy = largura (0..1)  ->  tela
+  function mapF(fx, fy, R) {
+    if (orientation === 'horizontal') return { x: R.x + fx * R.w, y: R.y + fy * R.h };
+    return { x: R.x + fy * R.w, y: R.y + fx * R.h }; // vertical: comprimento desce
+  }
+  function unmapF(sx, sy, R) {
+    if (orientation === 'horizontal') return { fx: (sx - R.x) / R.w, fy: (sy - R.y) / R.h };
+    return { fx: (sy - R.y) / R.h, fy: (sx - R.x) / R.w };
+  }
+  function pieceRadius() { return Math.min(W, H) * 0.026; }
+
+  /* ---------- desenho da superfície ---------- */
+  function drawField() {
+    var R = fieldRect(), sp = SPORTS[sport] || SPORTS.generico;
+    var fills = SURFACE_FILL[sp.surface] || SURFACE_FILL.court;
+    var g = ctx.createLinearGradient(R.x, R.y, R.x, R.y + R.h);
+    g.addColorStop(0, fills[0]); g.addColorStop(1, fills[1]);
+    ctx.fillStyle = g; ctx.fillRect(R.x, R.y, R.w, R.h);
+
+    // faixas do gramado
+    if (sp.surface === 'grass') {
+      ctx.save(); ctx.globalAlpha = .06; ctx.fillStyle = '#fff';
+      for (var i = 0; i < 10; i++) if (i % 2 === 0) {
+        var a = mapF(i / 10, 0, R), b = mapF((i + 1) / 10, 1, R);
+        ctx.fillRect(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+      }
+      ctx.restore();
+    }
+    var line = 'rgba(255,255,255,.8)';
+    ctx.save();
+    ctx.strokeStyle = line; ctx.lineWidth = Math.max(2, Math.min(W, H) * 0.0035);
+    ctx.strokeRect(R.x, R.y, R.w, R.h);
+
+    // linha do meio (perpendicular ao comprimento)
+    var m0 = mapF(0.5, 0, R), m1 = mapF(0.5, 1, R);
+    ctx.beginPath(); ctx.moveTo(m0.x, m0.y); ctx.lineTo(m1.x, m1.y); ctx.stroke();
+
+    // círculo central
+    if (sp.circle) {
+      var c = mapF(0.5, 0.5, R), rr = Math.min(R.w, R.h) * 0.13;
+      ctx.beginPath(); ctx.arc(c.x, c.y, rr, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(c.x, c.y, ctx.lineWidth * 1.4, 0, Math.PI * 2); ctx.fillStyle = line; ctx.fill();
+    }
+    // rede (vôlei) — linha grossa no meio + linhas de ataque
+    if (sp.net) {
+      ctx.save(); ctx.lineWidth = ctx.lineWidth * 2.4; ctx.strokeStyle = 'rgba(255,255,255,.95)';
+      ctx.beginPath(); ctx.moveTo(m0.x, m0.y); ctx.lineTo(m1.x, m1.y); ctx.stroke(); ctx.restore();
+      [1 / 3, 2 / 3].forEach(function (fx) {
+        var p0 = mapF(fx, 0, R), p1 = mapF(fx, 1, R);
+        ctx.save(); ctx.setLineDash([8, 8]);
+        ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke(); ctx.restore();
+      });
+    }
+    // grandes áreas / garrafão nas duas pontas
+    if (sp.boxes) {
+      var bw = 0.16, bh = 0.62, kw = 0.14, kh = 0.36; // área (fut) / garrafão (basq)
+      var useKey = (sp.boxes === 'key');
+      var dw = useKey ? kw : bw, dh = useKey ? kh : bh;
+      [[0, 1], [1, -1]].forEach(function (e) {
+        var startFx = e[0], dir = e[1];
+        var f0 = mapF(startFx, 0.5 - dh / 2, R);
+        var f1 = mapF(startFx + dir * dw, 0.5 + dh / 2, R);
+        ctx.strokeRect(Math.min(f0.x, f1.x), Math.min(f0.y, f1.y), Math.abs(f1.x - f0.x), Math.abs(f1.y - f0.y));
+        // gol pequeno
+        var gm = 0.05;
+        var g0 = mapF(startFx, 0.5 - gm, R), g1 = mapF(startFx - dir * 0.02, 0.5 + gm, R);
+        ctx.strokeRect(Math.min(g0.x, g1.x), Math.min(g0.y, g1.y), Math.abs(g1.x - g0.x), Math.abs(g1.y - g0.y));
+      });
+    }
+    // arcos de 3 pontos (basquete/handebol)
+    if (sp.arcs) {
+      var rr2 = Math.min(R.w, R.h) * 0.34;
+      [[0.02, 0], [0.98, Math.PI]].forEach(function (e) {
+        var cc = mapF(e[0], 0.5, R);
+        ctx.beginPath();
+        ctx.arc(cc.x, cc.y, rr2, e[1] - Math.PI / 2, e[1] + Math.PI / 2);
+        ctx.stroke();
+      });
+    }
+    ctx.restore();
+  }
+
+  /* ---------- desenho das peças e setas ---------- */
+  function teamOf(i){ return TACTICS.teams[pieces[i].teamIdx] || {}; }
+  function labelColor(hex){
+    var h = hex.replace('#',''); if (h.length===3) h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    var r=parseInt(h.substr(0,2),16), g=parseInt(h.substr(2,2),16), b=parseInt(h.substr(4,2),16);
+    return (0.299*r+0.587*g+0.114*b)/255 > 0.6 ? '#101010' : '#ffffff';
+  }
+  function drawArrow(a, R){
+    var p0 = mapF(a.x0, a.y0, R), p1 = mapF(a.x1, a.y1, R);
+    var lw = Math.max(3, Math.min(W,H)*0.006);
+    ctx.save(); ctx.strokeStyle=a.color; ctx.fillStyle=a.color; ctx.lineWidth=lw; ctx.lineCap='round';
+    ctx.setLineDash([lw*2.4, lw*1.6]);
+    ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y); ctx.stroke(); ctx.setLineDash([]);
+    var ang=Math.atan2(p1.y-p0.y,p1.x-p0.x), len=Math.max(14,lw*3.2);
+    ctx.beginPath(); ctx.moveTo(p1.x,p1.y);
+    ctx.lineTo(p1.x-len*Math.cos(ang-Math.PI/7), p1.y-len*Math.sin(ang-Math.PI/7));
+    ctx.lineTo(p1.x-len*Math.cos(ang+Math.PI/7), p1.y-len*Math.sin(ang+Math.PI/7));
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  function drawShape(s, R){
+    var a = mapF(s.x0, s.y0, R), b = mapF(s.x1, s.y1, R);
+    var x = Math.min(a.x,b.x), y = Math.min(a.y,b.y), w = Math.abs(b.x-a.x), h = Math.abs(b.y-a.y);
+    var lw = Math.max(2.5, Math.min(W,H)*0.005);
+    ctx.save();
+    ctx.fillStyle = rgba(s.color, 0.20); ctx.strokeStyle = s.color; ctx.lineWidth = lw;
+    if (s.type === 'ellipse'){
+      ctx.beginPath(); ctx.ellipse(x+w/2, y+h/2, w/2, h/2, 0, 0, Math.PI*2);
+      ctx.fill(); ctx.stroke();
+    } else {
+      var rd = Math.min(w,h)*0.10;
+      roundRect(x, y, w, h, rd); ctx.fill(); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  function drawPiece(p, i, R){
+    var team = TACTICS.teams[p.teamIdx] || {}, c = mapF(p.fx, p.fy, R), r = pieceRadius();
+    var isSel = selHas(p.id);
+    var base = p.gk ? (team.goalie || '#333') : (team.color || '#888');
+    var fill = isSel ? darken(base, 0.34) : base;   // selecionado fica mais escuro
+    ctx.save();
+    ctx.shadowColor='rgba(0,0,0,.45)'; ctx.shadowBlur=r*0.5; ctx.shadowOffsetY=r*0.18;
+    ctx.beginPath(); ctx.arc(c.x,c.y,r,0,Math.PI*2); ctx.fillStyle=fill; ctx.fill();
+    ctx.shadowColor='transparent';
+    ctx.lineWidth=Math.max(2,r*0.12); ctx.strokeStyle = isSel ? ACCENT : 'rgba(255,255,255,.92)';
+    if (isSel) ctx.lineWidth = Math.max(3, r*0.22);
+    ctx.stroke();
+    // número
+    ctx.fillStyle=labelColor(base); ctx.font='800 '+Math.round(r*1.0)+'px Inter,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(p.num, c.x, c.y+r*0.04);
+    ctx.restore();
+    // nome (quando selecionado)
+    if (isSel && p.name){
+      var txt = p.num + '  ' + p.name;
+      ctx.save(); ctx.font='800 '+Math.round(r*0.86)+'px Inter,sans-serif';
+      var tw = ctx.measureText(txt).width, padx=r*0.55, ph=r*1.5, bw=tw+padx*2;
+      var bx=c.x-bw/2, by=c.y-r-ph-6;
+      if (by < 4) by = c.y + r + 6; // se não couber acima, mostra abaixo
+      roundRect(bx,by,bw,ph,ph/2); ctx.fillStyle='rgba(16,16,16,.94)'; ctx.fill();
+      ctx.lineWidth=1.5; ctx.strokeStyle=team.color||ACCENT; ctx.stroke();
+      ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(txt, c.x, by+ph/2); ctx.restore();
+    }
+  }
+  function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+  function redraw(){
+    if (!ctx) return;
+    ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+    var R = fieldRect();
+    drawField();
+    shapes.forEach(function(s){ drawShape(s,R); });   // zonas (por baixo)
+    if (curShape) drawShape(curShape,R);
+    arrows.forEach(function(a){ drawArrow(a,R); });
+    if (current) drawArrow(current,R);
+    pieces.forEach(function(p,i){ if (!selHas(p.id)) drawPiece(p,i,R); });
+    pieces.forEach(function(p,i){ if (selHas(p.id)) drawPiece(p,i,R); }); // selecionados por cima
+    if (marquee){ ctx.save(); ctx.strokeStyle=ACCENT; ctx.fillStyle='rgba(255,144,77,.12)'; ctx.lineWidth=1.5; ctx.setLineDash([6,4]);
+      var mx=Math.min(marquee.x0,marquee.x1), my=Math.min(marquee.y0,marquee.y1), mw=Math.abs(marquee.x1-marquee.x0), mh=Math.abs(marquee.y1-marquee.y0);
+      ctx.fillRect(mx,my,mw,mh); ctx.strokeRect(mx,my,mw,mh); ctx.restore(); }
+  }
+
+  /* ---------- resize ---------- */
+  function resize(){
+    dpr = window.devicePixelRatio||1; W=window.innerWidth; H=window.innerHeight;
+    canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+    canvas.style.width=W+'px'; canvas.style.height=H+'px'; redraw();
+  }
+
+  /* ---------- histórico ---------- */
+  function snap(){ return { pieces: JSON.parse(JSON.stringify(pieces)), arrows: JSON.parse(JSON.stringify(arrows)), shapes: JSON.parse(JSON.stringify(shapes)) }; }
+  function push(){ history.push(snap()); if (history.length>60) history.shift(); }
+  function undo(){ if (!history.length) return; var s=history.pop(); pieces=s.pieces; arrows=s.arrows; shapes=s.shapes||[]; selected=-1; redraw(); }
+
+  /* ---------- hit-test ---------- */
+  function pieceAt(sx,sy){ var R=fieldRect(), r=pieceRadius();
+    for (var i=pieces.length-1;i>=0;i--){ var c=mapF(pieces[i].fx,pieces[i].fy,R);
+      if (Math.hypot(c.x-sx,c.y-sy)<=r) return i; } return -1; }
+  function distSeg(px,py,ax,ay,bx,by){ var dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy;
+    var t=l2?((px-ax)*dx+(py-ay)*dy)/l2:0; t=Math.max(0,Math.min(1,t));
+    return Math.hypot(px-(ax+t*dx),py-(ay+t*dy)); }
+  function arrowAt(sx,sy){ var R=fieldRect(), thr=Math.max(10,Math.min(W,H)*0.012);
+    for (var i=arrows.length-1;i>=0;i--){ var a=arrows[i], p0=mapF(a.x0,a.y0,R), p1=mapF(a.x1,a.y1,R);
+      if (distSeg(sx,sy,p0.x,p0.y,p1.x,p1.y)<=thr) return i; } return -1; }
+  function nextNum(ti){ var m=0; pieces.forEach(function(p){ if(p.teamIdx===ti){ var n=parseInt(p.num,10); if(!isNaN(n)&&n>m)m=n; } }); return String(m+1); }
+  function shapeAt(sx,sy){ var R=fieldRect();
+    for (var i=shapes.length-1;i>=0;i--){ var s=shapes[i], a=mapF(s.x0,s.y0,R), b=mapF(s.x1,s.y1,R);
+      var x=Math.min(a.x,b.x), y=Math.min(a.y,b.y), w=Math.abs(b.x-a.x), h=Math.abs(b.y-a.y);
+      if (s.type==='ellipse'){ var nx=(sx-(x+w/2))/(w/2||1), ny=(sy-(y+h/2))/(h/2||1); if(nx*nx+ny*ny<=1) return i; }
+      else if (sx>=x&&sx<=x+w&&sy>=y&&sy<=y+h) return i;
+    } return -1; }
+
+  /* ---------- ponteiro ---------- */
+  function onDown(e){
+    var sx=e.clientX, sy=e.clientY, R=fieldRect();
+    if (editing && tool==='add'){ push(); var f=unmapF(sx,sy,R);
+      pieces.push({id:pieceUid++, teamIdx:curTeam, num:nextNum(curTeam), name:'', gk:false,
+        fx:Math.max(0,Math.min(1,f.fx)), fy:Math.max(0,Math.min(1,f.fy))}); redraw(); openEdit(pieces.length-1); return; }
+    if (editing && tool==='erase'){
+      var pi=pieceAt(sx,sy); if(pi>=0){ push(); var rid=pieces[pi].id; pieces.splice(pi,1); var k=selected.indexOf(rid); if(k>=0)selected.splice(k,1); redraw(); return; }
+      var ai=arrowAt(sx,sy); if(ai>=0){ push(); arrows.splice(ai,1); redraw(); return; }
+      var zi=shapeAt(sx,sy); if(zi>=0){ push(); shapes.splice(zi,1); redraw(); } return; }
+    if (editing && tool==='arrow'){ var f2=unmapF(sx,sy,R); var sp=pieceAt(sx,sy);
+      if(sp>=0){ f2={fx:pieces[sp].fx,fy:pieces[sp].fy}; }
+      current={x0:f2.fx,y0:f2.fy,x1:f2.fx,y1:f2.fy,color:arrowColor}; try{canvas.setPointerCapture(e.pointerId);}catch(_){}
+      return; }
+    if (editing && (tool==='rect'||tool==='ellipse')){ var fz=unmapF(sx,sy,R);
+      curShape={type:tool, x0:fz.fx, y0:fz.fy, x1:fz.fx, y1:fz.fy, color:arrowColor}; try{canvas.setPointerCapture(e.pointerId);}catch(_){}
+      return; }
+    // ferramenta padrão: SELECIONA e MOVE sem trocar de ferramenta.
+    // down numa peça = arrasta (o grupo selecionado junto); down no vazio = caixa de seleção.
+    var idx=pieceAt(sx,sy); pressPiece=idx; pressXY={x:sx,y:sy};
+    if (idx>=0){
+      var grp = selHas(pieces[idx].id) && selected.length>1;
+      dragging={i:idx, snap:snap(), moved:false, group:grp};
+      if (grp){ dragging.f0=unmapF(sx,sy,R); dragging.start={};
+        pieces.forEach(function(p){ if(selHas(p.id)) dragging.start[p.id]={fx:p.fx,fy:p.fy}; }); }
+      try{canvas.setPointerCapture(e.pointerId);}catch(_){}
+      canvas.style.cursor='grabbing';
+    } else {
+      marquee={x0:sx,y0:sy,x1:sx,y1:sy}; try{canvas.setPointerCapture(e.pointerId);}catch(_){}
+    }
+  }
+  function onMove(e){
+    var sx=e.clientX, sy=e.clientY, R=fieldRect();
+    if (dragging){
+      if (!dragging.moved && pressXY && Math.hypot(sx-pressXY.x,sy-pressXY.y)>4){ dragging.moved=true; history.push(dragging.snap); if(history.length>60)history.shift(); }
+      if (dragging.moved){ var f=unmapF(sx,sy,R);
+        if (dragging.group){ var dfx=f.fx-dragging.f0.fx, dfy=f.fy-dragging.f0.fy;
+          pieces.forEach(function(p){ var st=dragging.start[p.id]; if(st){ p.fx=Math.max(0,Math.min(1,st.fx+dfx)); p.fy=Math.max(0,Math.min(1,st.fy+dfy)); } }); }
+        else { var p=pieces[dragging.i]; p.fx=Math.max(0,Math.min(1,f.fx)); p.fy=Math.max(0,Math.min(1,f.fy)); }
+        redraw(); }
+    } else if (current){ var sp=pieceAt(sx,sy);
+      if(sp>=0){ current.x1=pieces[sp].fx; current.y1=pieces[sp].fy; } else { var f2=unmapF(sx,sy,R); current.x1=f2.fx; current.y1=f2.fy; }
+      redraw();
+    } else if (curShape){ var fz=unmapF(sx,sy,R); curShape.x1=fz.fx; curShape.y1=fz.fy; redraw(); }
+    else if (marquee){ marquee.x1=sx; marquee.y1=sy; redraw(); }
+  }
+  function onUp(e){
+    var sx=e.clientX, sy=e.clientY;
+    if (marquee){ var R=fieldRect();
+      var x=Math.min(marquee.x0,marquee.x1), y=Math.min(marquee.y0,marquee.y1), w=Math.abs(marquee.x1-marquee.x0), h=Math.abs(marquee.y1-marquee.y0);
+      if (w>4&&h>4){ selected=[]; pieces.forEach(function(p){ var c=mapF(p.fx,p.fy,R); if(c.x>=x&&c.x<=x+w&&c.y>=y&&c.y<=y+h) selected.push(p.id); }); }
+      else { selClear(); }   // clique no vazio limpa a seleção
+      marquee=null; redraw(); return; }
+    if (dragging){ var wasClick = !dragging.moved; var i=dragging.i; dragging=null; canvas.style.cursor='';
+      if (wasClick){ selToggle(pieces[i].id); redraw(); } return; }   // clique = (des)seleciona; multi
+    if (current){ var moved=Math.hypot(current.x1-current.x0, current.y1-current.y0);
+      if (moved>0.02){ push(); arrows.push(current); } current=null; redraw(); return; }
+    if (curShape){ var mv=Math.hypot(curShape.x1-curShape.x0, curShape.y1-curShape.y0);
+      if (mv>0.02){ push(); shapes.push(curShape); } curShape=null; redraw(); return; }
+    // clique em vazio no quadro deseleciona todos
+    if (pressXY && Math.hypot(sx-pressXY.x,sy-pressXY.y)<5 && pieceAt(sx,sy)<0){ if(selClear()) redraw(); }
+  }
+  function onDbl(e){ if(!editing) return; var i=pieceAt(e.clientX,e.clientY); if(i>=0){ e.preventDefault(); openEdit(i); } }
+
+  /* ---------- editar número + nome ---------- */
+  function openEdit(i){ closeName();
+    var R=fieldRect(), c=mapF(pieces[i].fx,pieces[i].fy,R), r=pieceRadius();
+    var pop=document.createElement('div'); pop.className='tk-edit-pop'; pop.dataset.i=String(i);
+    pop.style.left=c.x+'px'; pop.style.top=(c.y-r-46)+'px';
+    var numI=document.createElement('input'); numI.className='tk-numinput'; numI.value=pieces[i].num||''; numI.maxLength=3; numI.title='número';
+    var nmI=document.createElement('input'); nmI.className='tk-nameinput2'; nmI.value=pieces[i].name||''; nmI.placeholder='nome'; nmI.title='nome';
+    pop.appendChild(numI); pop.appendChild(nmI); document.body.appendChild(pop);
+    nameInput=pop; pop._num=numI; pop._name=nmI;
+    setTimeout(function(){ numI.focus(); numI.select(); },0);
+    function onKey(ev){ if(ev.key==='Enter'){ev.preventDefault();commitEdit();}
+      else if(ev.key==='Escape'){ev.preventDefault();closeName();} ev.stopPropagation(); }
+    function onBlur(){ setTimeout(function(){ if(nameInput===pop && !pop.contains(document.activeElement)) commitEdit(); },0); }
+    numI.addEventListener('keydown',onKey); nmI.addEventListener('keydown',onKey);
+    numI.addEventListener('blur',onBlur); nmI.addEventListener('blur',onBlur);
+  }
+  function commitEdit(){ if(!nameInput) return; var i=parseInt(nameInput.dataset.i,10);
+    var num=(nameInput._num.value||'').trim(), name=(nameInput._name.value||'').trim();
+    var el=nameInput; nameInput=null; el.remove();
+    if(pieces[i] && (num!==pieces[i].num || name!==pieces[i].name)){ push(); if(num) pieces[i].num=num; pieces[i].name=name; redraw(); } }
+  function closeName(){ if(!nameInput) return; var el=nameInput; nameInput=null; el.remove(); }
+
+  /* ---------- UI: barra de edição + legendas ---------- */
+  function buildBar(){
+    var bar=document.createElement('div'); bar.id='tk-bar';
+    var tools=[['select',IC.move,'Selecionar e mover: clique ou caixa seleciona; arraste move o grupo junto'],
+      ['add',IC.add,'Adicionar jogador'],['arrow',IC.arrow,'Seta de jogada'],['rect',IC.rect,'Zona retângulo'],['ellipse',IC.ellipse,'Zona círculo'],['erase',IC.erase,'Apagar']];
+    tools.forEach(function(t){ var b=document.createElement('button'); b.className='tk-tool'+(t[0]===tool?' tk-active':'');
+      b.dataset.tool=t[0]; b.title=t[2]; b.innerHTML=icon(t[1]); b.onclick=function(){ setTool(t[0]); }; bar.appendChild(b); });
+    bar.appendChild(sep());
+    // paleta de cor (setas e zonas)
+    var cols=document.createElement('div'); cols.className='tk-cols';
+    PALETTE.forEach(function(c){ var b=document.createElement('button'); b.className='tk-csw'+(c===arrowColor?' tk-active':'');
+      b.dataset.col=c; b.style.background=c; b.title='Cor da seta/zona';
+      b.onclick=function(){ arrowColor=c; Array.prototype.forEach.call(cols.children,function(x){x.classList.toggle('tk-active',x.dataset.col===c);}); };
+      cols.appendChild(b); });
+    bar.appendChild(cols);
+    bar.appendChild(sep());
+    // seletor de time (para adicionar)
+    var ts=document.createElement('div'); ts.className='tk-teamsel';
+    TACTICS.teams.forEach(function(tm,ti){ var b=document.createElement('button'); b.className='tk-tsw'+(ti===curTeam?' tk-active':'');
+      b.dataset.team=String(ti); b.innerHTML='<i style="background:'+tm.color+'"></i>'+tm.name;
+      b.onclick=function(){ curTeam=ti; Array.prototype.forEach.call(ts.children,function(x){x.classList.toggle('tk-active',+x.dataset.team===ti);}); };
+      ts.appendChild(b); });
+    bar.appendChild(ts);
+    bar.appendChild(sep());
+    bar.appendChild(actBtn(IC.flip,'Virar o campo (V)',flip));
+    bar.appendChild(actBtn(IC.undo,'Desfazer (Ctrl+Z)',undo));
+    bar.appendChild(actBtn(IC.trash,'Limpar setas e zonas',function(){ if(arrows.length||shapes.length){push();arrows=[];shapes=[];redraw();} }));
+    bar.appendChild(actBtn(IC.x,'Ocultar ferramentas (T)',function(){ setEdit(false); }));
+    document.body.appendChild(bar);
+  }
+  function sep(){ var s=document.createElement('div'); s.className='tk-sep'; return s; }
+  function actBtn(ic,title,fn){ var b=document.createElement('button'); b.className='tk-tool'; b.title=title; b.innerHTML=icon(ic); b.onclick=fn; return b; }
+  function setTool(t){ tool=t; Array.prototype.forEach.call(document.querySelectorAll('#tk-bar .tk-tool[data-tool]'),function(b){ b.classList.toggle('tk-active',b.dataset.tool===t); });
+    canvas.style.cursor = t==='add'?'copy':t==='erase'?'cell':(t==='arrow'||t==='rect'||t==='ellipse'||t==='marquee')?'crosshair':'default'; }
+  function setEdit(on){ editing=on; document.body.classList.toggle('tk-edit',on); if(!on){ closeName(); setTool('select'); } }
+
+  function buildLegend(){
+    var el=document.getElementById('tk-teams'); el.innerHTML='';
+    TACTICS.teams.forEach(function(tm){ var d=document.createElement('div'); d.className='t';
+      d.innerHTML='<span class="swatch" style="background:'+tm.color+'"></span>'+tm.name; el.appendChild(d); });
+    document.getElementById('tk-h1').textContent = TACTICS.title||'';
+    var eb=document.getElementById('tk-eyebrow');
+    if (TACTICS.eyebrow){ eb.textContent=TACTICS.eyebrow; eb.style.display=''; } else { eb.style.display='none'; }
+  }
+
+  /* ---------- virar campo ---------- */
+  function flip(){ orientation = (orientation==='horizontal')?'vertical':'horizontal'; closeName(); redraw(); }
+
+  /* ---------- init ---------- */
+  function init(){
+    canvas=document.getElementById('tk-canvas'); ctx=canvas.getContext('2d');
+    try{ if(/[?&]vertical=1\b/.test(location.search)) orientation='vertical'; }catch(_){}
+    buildPieces(); buildLegend(); buildBar();
+    window.addEventListener('resize',resize);
+    canvas.addEventListener('pointerdown',onDown);
+    window.addEventListener('pointermove',onMove);
+    window.addEventListener('pointerup',onUp);
+    canvas.addEventListener('dblclick',onDbl);
+    document.addEventListener('keydown',function(e){
+      var typing = e.target && (e.target.tagName==='INPUT'||e.target.isContentEditable);
+      if (typing) return;
+      if (e.key==='t'||e.key==='T'){ e.preventDefault(); setEdit(!editing); }
+      else if (e.key==='v'||e.key==='V'){ e.preventDefault(); flip(); }
+      else if (e.key==='Escape'){ if(selClear()){ redraw(); } else if(editing){ setEdit(false); } }
+      else if ((e.ctrlKey||e.metaKey)&&(e.key==='z'||e.key==='Z')){ e.preventDefault(); undo(); }
+    });
+    setEdit(true);   // ferramentas ficam à mostra por padrão (T oculta/mostra)
+    resize();
+    // Regra Zero: respiração sutil do campo mantém o slide vivo mesmo parado
+    var t0=null; (function beat(ts){ if(t0===null)t0=ts; requestAnimationFrame(beat); })(0);
+  }
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
+</script>
+</body>
+</html>
