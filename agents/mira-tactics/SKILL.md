@@ -22,7 +22,13 @@ description: >-
 
 Gera um slide dedicado onde um **campo ou quadra** aparece com os **times já posicionados na formação**. Cada jogador é um círculo na cor do time, com o **número** no centro; **clicar no jogador mostra o nome**. O apresentador manipula tudo ao vivo: arrasta jogadores, adiciona, apaga e desenha setas de jogada. As **ferramentas ficam sempre à mostra**.
 
-> **Fonte da verdade:** o motor de cenário validado está no slide de referência `decks/apresentacao-mira-gsap/tatico-brasil-noruega.html`. Gere sempre a partir dele: copie o arquivo e reescreva apenas o bloco `var TACTICS = { ... }`. Todo o desenho de campo, o clique→nome, a edição e o virar-na-vertical já vivem no motor; você só troca os dados.
+> **Fonte da verdade:** o motor de cenário validado é EMBARCADO no pacote e chega ao projeto junto com a instalação. Procure-o nesta ordem e use o primeiro que existir:
+>
+> 1. `mira-templates/decks/mesa-tatica/index.html` (projeto com Mira instalado)
+> 2. `templates/decks/mesa-tatica/index.html` (repositório fonte do Mira)
+> 3. `node_modules/mira-animator/templates/decks/mesa-tatica/index.html`
+>
+> Se nenhum existir, a instalação está desatualizada: rode `npx mira-animator update` (ou `install`) e ele aparece. **NUNCA reconstrua o motor do zero.** Gere sempre a partir dele: copie o arquivo e reescreva apenas o bloco `var TACTICS = { ... }`. Todo o desenho de campo, o clique→nome, a edição e o virar-na-vertical já vivem no motor; você só troca os dados.
 
 > Esta skill é a **frente 1** do `brainstormings/BRAINSTORM_MIRA_MANIPULACAO.md` (quadro tático / peças arrastáveis). É irmã do overlay `mira-tactics.js` (telestrator de peças por cima de qualquer slide, tecla T) e do `mira-draw` (desenho por cima, tecla P). Aqui o resultado é um **slide próprio**, com formação e nomes reais.
 
@@ -158,7 +164,7 @@ Regras do schema:
 
 1. **Interpretar o pedido:** esporte, times, cores, nº de jogadores, orientação.
 2. **Perguntar sobre a formação oficial** (só quando há times reais). Se sim, buscar via `WebSearch` número, nome e cor de goleiro; citar fontes.
-3. **Copiar o slide de referência** `decks/apresentacao-mira-gsap/tatico-brasil-noruega.html` para `decks/<nome>/index.html`.
+3. **Copiar o motor de referência** (ver "Fonte da verdade" acima: `mira-templates/decks/mesa-tatica/index.html` ou equivalente) para `decks/<nome>/index.html`.
 4. **Reescrever o `var TACTICS = { ... }`** com os dados. Não toque no motor abaixo.
 5. **Conferir:** número em todos, goleiro com cor própria, formação coerente, cores dos times distintas, título/eyebrow preenchidos.
 6. **Se for vertical:** `orientation: 'vertical'` (ou instruir `?vertical=1` / tecla `V`).
