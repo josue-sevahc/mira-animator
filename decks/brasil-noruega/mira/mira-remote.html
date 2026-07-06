@@ -20,7 +20,7 @@
         html, body { height: 100%; }
         body {
             font-family: Inter, -apple-system, system-ui, "Segoe UI", sans-serif;
-            background: #0b0e15; color: #eef1f7; overflow: hidden; height: 100dvh;
+            background: #000; color: #eef1f7; overflow: hidden; height: 100dvh;
         }
 
         /* palco 16:9 fixo (1280x720) escalado para caber (RF-06) */
@@ -57,6 +57,9 @@
         }
         .status button:active { transform: scale(.92); }
         .status button.on { color: #101010; background: var(--orange); }
+        /* No palco (notebook/telão) a apresentação fica limpa: nada de barra.
+           Só o QR aparece (RF-02/03); status e controles são coisa de celular. */
+        body.role-stage .status { display: none; }
 
         /* barra de controle (celular): só setas redondas nas pontas do rodapé */
         .bar {
@@ -102,7 +105,7 @@
 </head>
 
 <body>
-    <div class="stage"><iframe id="deck" src="/index.html?stage=1"></iframe></div>
+    <div class="stage"><iframe id="deck" src="/tatico-brasil-noruega.html?stage=1"></iframe></div>
 
     <div class="status">
         <div class="pill"><span class="dot" id="dot"></span><span id="conn">conectando…</span></div>
@@ -184,6 +187,14 @@
                 if (!secs.length) return;
                 var idx = Math.max(0, Math.min(secs.length - 1, i));
                 secs[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Em celular a primeira rolagem suave às vezes não anda (o deck
+                // fica no slide antigo e o eco do servidor não corrige, porque
+                // lastSlide já aponta para o alvo). Confere e força se preciso.
+                setTimeout(function () {
+                    if (getIdx() !== idx) {
+                        try { win().scrollTo(0, secs[idx].offsetTop); } catch (e) { }
+                    }
+                }, 700);
             }
             function applySlide(slide) {
                 if (!deckReady) { pendingSlide = slide; return; }
@@ -427,7 +438,7 @@
         })();
     </script>
     <!-- telestrator da shell (a cópia do deck, com a API de sync) -->
-    <script src="/mira-draw.js" defer></script>
+    <script src="/mira/mira-draw.js" defer></script>
 </body>
 
 </html>

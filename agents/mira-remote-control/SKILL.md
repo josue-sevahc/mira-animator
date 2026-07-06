@@ -23,7 +23,7 @@ Ativa num deck existente a camada do **mira-remote**: um servidor leve serve o d
 
 ## Modelo mental
 
-- **Sincroniza-se estado, não quadros.** O canal move `{slide, reveal}` e os traços do telestrator; a animação de cada slide (Regra Zero) roda local em cada tela.
+- **Sincroniza-se estado, não quadros.** O canal move `{slide, reveal}` e os traços do telestrator; a animação de cada slide (Regra Zero) roda local em cada tela. Na **mesa tática** também viaja o estado das peças/bola/setas/zonas/desenhos, além do painel de jogada e dos quadros gravados: o board expõe `window.miraTactics` e a shell publica em `/tactics` (contrato no servidor). O painel de jogada abre pelo botão 🎬 da barra (no celular não há tecla `R`).
 - **Palco 16:9 fixo.** A shell roda o deck num iframe de exatamente 1280x720, escalado para caber em qualquer tela: a geometria do slide é idêntica no notebook e no celular, e os desenhos caem no mesmo lugar (viajam em coordenadas do palco).
 - **Papéis por IP, sem login:** localhost = palco; primeiro IP externo = controle; demais = espelho (só acompanham; comandos deles são ignorados em silêncio).
 - **Camada opcional.** Nada no `index.html` é alterado. Sem o atalho, o deck abre em `file://` como sempre (regressão zero).
@@ -42,7 +42,7 @@ Ativa num deck existente a camada do **mira-remote**: um servidor leve serve o d
 6. **Reporte ao usuário:**
    - Como apresentar: duplo clique em `remote-control-windows.bat` (Windows) ou `remote-control-apple.command` (macOS/Linux); o deck abre com um QR no canto; escanear com o celular; o QR some e o celular controla.
    - Teclas no notebook: `C` mostra/esconde o QR de novo; `P` liga a caneta; setas navegam.
-   - No celular: botões Voltar/Avançar, `✎` desenha, `⛶` tela cheia (no iPhone o botão não aparece; gire o aparelho).
+   - No celular: setas redondas nas pontas do rodapé (`←` à esquerda volta, `→` à direita avança), `✎` desenha, `⛶` tela cheia (no iPhone o botão não aparece; gire o aparelho).
    - Firewall do Windows: no primeiro uso, clicar em PERMITIR (inclusive em rede pública/hotspot).
    - Como reverter: apagar os 4 arquivos copiados devolve o deck ao `file://` puro.
 

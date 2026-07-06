@@ -37,7 +37,7 @@ O Mira não simula a partida. Ele monta um slide declarativo: a **CONFIG** (`TAC
 
 - **Coordenadas de campo, não de tela.** Tudo usa `u` 0..1 no comprimento (gol esquerdo ao direito) e `v` 0..1 na largura. Virar para a vertical é só remapear (u,v); nada é recalculado.
 - **Número sempre visível, nome sob clique.** O número flutua acima da cabeça do boneco; o nome aparece num balão ao clicar (a peça selecionada escurece).
-- **Goleiro com uniforme próprio** (`goalie`), o mais fiel possível ao uniforme real.
+- **Goleiro sempre presente** em cada time, com uniforme próprio (`goalie`), o mais fiel possível ao uniforme real. Vale inclusive para cenas/recortes de um lance (ver diretiva abaixo).
 - **Campo abre limpo:** sem setas nem zonas pré-desenhadas (`arrows: []`, `shapes: []`).
 
 ## Visual (não simplificar)
@@ -117,15 +117,20 @@ var TACTICS = {
 
 Regras: o goleiro tem `gk: true` e vem primeiro; a ordem dos `players` casa com as posições da formação (goleiro, defesa, meio, ataque); `side` separa as metades; cores em hex (se as camisas forem parecidas, escolha um tom distinto para um deles e avise). O motor desenha campo de futebol; times com nº de jogadores diferente de 11 (ou formação desconhecida) são posicionados em grade.
 
+> ### DIRETIVA: todo time SEMPRE tem goleiro (inegociável)
+> Nenhuma mesa sai sem os dois goleiros. Isso vale também para **cenas/recortes de um lance** (snapshot com menos de 11 por lado): o goleiro entra do mesmo jeito, com `gk: true` e posição absoluta **no próprio gol** (`v: .5`; `u: .05` para quem defende a esquerda, `u: .95` para quem defende a direita, conforme o `side`/lado do lance). Um time sem goleiro é erro de geração, não uma opção.
+>
+> **Cuidado com jogadas salvas ao alterar o elenco:** os `id` são sequenciais na ordem do array (time 1 e depois time 2), então inserir/remover jogador desloca os `id` seguintes e desalinha os `.json` de `data/`. Prefira **acrescentar o goleiro no fim do array do time** e, se algum id posterior mudar, **remapeie as chaves dos frames** nos `.json` afetados (jogadores ausentes de um frame ficam parados na posição da CONFIG, então o goleiro fica no gol durante a jogada).
+
 ## Barra de ferramentas (janela flutuante)
 
 Só ícones com tooltip, sem rótulos de texto, `zoom: 1.21`, arrastável pela alça ⠿. **SEM botão de ocultar** (decisão explícita: usuário se trancava para fora); ocultar/mostrar é só pela tecla `F`. No modo vertical a barra cola no rodapé do slide e re-centraliza.
 
-Ferramentas: ✥ mover/selecionar (arrasto no vazio = seleção em caixa; grupo move junto), adicionar jogador com um MINI BONECO nas cores de cada time, ➜ seta, ✎ paint (desenho livre com glow, tecla `P`), ▭/◯ zonas, ✕ apagar, paleta de 6 cores (setas/zonas/paint), ●/⛹ estilo das peças, ⟳ virar, ↺ desfazer, ⌧ limpar (setas+zonas+traços), `?` help (painel "COMANDOS" com fechar estilo macOS sempre visível; Esc fecha).
+Ferramentas: ✥ mover/selecionar (arrasto no vazio = seleção em caixa; grupo move junto), adicionar jogador com um MINI BONECO nas cores de cada time, ➜ seta, ✎ paint (desenho livre com glow, tecla `P`), ▭/◯ zonas, ✕ apagar, paleta de 6 cores (setas/zonas/paint), ●/⛹ estilo das peças, ⟳ virar, ↺ desfazer, ⌧ limpar (setas+zonas+traços), 🎬 abre/fecha o painel de jogada (mesmo que a tecla `R`; essencial no celular/touch), `?` help (painel "COMANDOS" com fechar estilo macOS sempre visível; Esc fecha).
 
 ## Gravação de jogada (quadros-chave, tecla R)
 
-Janela flutuante própria "JOGADA" (arrastável, aberta/fechada por `R`), que nasce dentro do campo, canto inferior esquerdo. No primeiro `R` sem quadros, a cena atual vira o quadro 1 automaticamente.
+Janela flutuante própria "JOGADA" (arrastável, aberta/fechada por `R` ou pelo botão 🎬 da barra — o botão é a única via no celular/touch), que nasce dentro do campo, canto inferior esquerdo. No primeiro `R` sem quadros, a cena atual vira o quadro 1 automaticamente.
 
 - ⏺ Quadro captura um snapshot (jogadores + bola); contador `atual/total`.
 - ▶ Play / ⏸ (barra de espaço) interpola entre quadros (1,2s por trecho, ease in-out cúbico), com o trote dos bonecos rodando; tocar no campo pausa.
@@ -164,7 +169,7 @@ Não aplique o reflow genérico da skill `mira-vertical`: aqui o campo apenas **
 | Ctrl+Z | desfazer |
 | Delete | apaga selecionados |
 | Esc | fecha help/lista ou limpa seleção |
-| duplo clique | renomeia o jogador |
+| duplo clique | renomeia o jogador (nº e nome); Enter/clique fora salva, Esc cancela |
 
 ## Passos
 
@@ -190,6 +195,11 @@ Não aplique o reflow genérico da skill `mira-vertical`: aqui o campo apenas **
 10. Botões destrutivos do painel de jogada (⌫ ✕) agrupados, longe do ⏮.
 11. Jogada salva é atualizável (nome pré-preenchido + 💾 por linha da lista).
 12. Não quebrar o schema `mira-tactics-play/1` (jogadas já salvas do usuário).
+13. **Todo time sempre tem goleiro** (`gk: true`), inclusive em cenas/recortes de um lance; no snapshot, posicionado no próprio gol.
+14. Renomear jogador (nº e nome) por duplo clique é robusto ao arrasto (detectado no `pointerup`, não só no `dblclick` nativo) e a área clicável cobre o número flutuante; **Enter e clicar fora salvam, Esc cancela**.
+15. O motor expõe `window.miraTactics` (`getState`/`setState`/`onchange`) para o mira-remote espelhar peças, bola, setas, zonas e desenhos entre notebook e celular. Em `file://` (sem shell) `onchange` fica null e nada trafega (regressão zero). Não remover.
+16. O painel de jogada abre também pelo botão 🎬 da barra (não só pela tecla `R`), para funcionar no celular/touch; e o estado da gravação (quadros, índice e painel aberto) entra no sync do `window.miraTactics`, então gravar/abrir num aparelho reflete no outro.
+17. Bola "colada" ao portador: mover um jogador encostado na bola arrasta a bola junto (condução), até o usuário mover a bola para longe (desencosta). Limiar de contato ~32px no espaço do tabuleiro.
 
 ## Checklist
 
@@ -197,6 +207,7 @@ Não aplique o reflow genérico da skill `mira-vertical`: aqui o campo apenas **
 - [ ] **Pesquisou o ÚLTIMO JOGO de cada time e validou os 4 atributos: nome, número, posição e aparência (por foto)**, em sites locais/oficiais, cruzando fontes.
 - [ ] Citou fontes e marcou aproximações (número sem fonte, cor de goleiro, skin/hair em dúvida).
 - [ ] `shorts` e `goalie` preenchidos, fiéis aos uniformes reais.
+- [ ] **Os dois goleiros presentes** (`gk: true`), inclusive em cena/recorte de lance (aí, posicionados no próprio gol).
 - [ ] Campo abre limpo (`arrows: []`, `shapes: []`).
 - [ ] Pasta `data/` criada no deck novo.
 - [ ] Título em caixa alta com "x" minúsculo, alinhado à lateral esquerda; `eyebrow` oculto salvo pedido.

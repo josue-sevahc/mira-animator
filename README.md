@@ -85,14 +85,15 @@ Every deck ships with a built-in edit mode. Open the deck and press **`E`** (or 
 
 Saving works two ways: over `file://` it uses the browser's file picker (Chrome/Edge); for silent saves, serve the folder with `node mira-serve.js decks/<name>` and the order is written straight to disk. To add edit mode to an older deck that predates this feature, run `npx mira-animator edit <deck>`.
 
-### Drawing over slides and tactics board
+### Drawing over slides
 
-Every deck also ships with two live-presentation tools, both vanilla and `file://`-friendly:
+Every deck also ships with a live-presentation telestrator, vanilla and `file://`-friendly:
 
 - **`mira-draw.js`** — press **`P`** (or `?draw=1`): a telestrator to draw over the current slide — pen, highlighter, line, arrow, shapes, text and eraser, with colors, widths and undo. The slide's animation keeps running underneath.
-- **`mira-tactics.js`** — press **`T`** (or `?tactics=1`): a tactics board overlay with draggable pieces. For a full dedicated tactics-table slide (animated chibi players, real lineups, recorded plays with replay), the `mira-tactics` agent generates one from the bundled engine at `mira-templates/decks/mesa-tatica/index.html`.
 
-`npx mira-animator edit <deck>` retrofits all three authoring tools (edit, draw, tactics) into an older deck.
+For a dedicated tactics-table slide (animated chibi players, real lineups, recorded plays with replay, phone remote sync), the `mira-tactics` agent generates one from the bundled engine at `mira-templates/decks/mesa-tatica/index.html`.
+
+`npx mira-animator edit <deck>` retrofits both authoring tools (edit, draw) into an older deck.
 
 ### Presenting with your phone (mira-remote-control)
 

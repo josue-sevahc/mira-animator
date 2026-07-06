@@ -61,19 +61,23 @@
            Só o QR aparece (RF-02/03); status e controles são coisa de celular. */
         body.role-stage .status { display: none; }
 
-        /* barra de controle (celular): botões grandes de Voltar/Avançar */
+        /* barra de controle (celular): só setas redondas nas pontas do rodapé */
         .bar {
             position: fixed; bottom: 22px; left: 0; right: 0; z-index: 100005;
-            display: none; gap: 12px; justify-content: center; padding: 0 18px;
+            display: none; justify-content: space-between; align-items: center;
+            padding: 0 22px; pointer-events: none;   /* o meio deixa o palco livre */
         }
         body.role-control .bar { display: flex; }
         body.md-on .bar { display: none; }   /* desenhando: some para não disputar o rodapé */
         .bar button {
-            flex: 1; max-width: 220px; padding: 18px; border: 0; border-radius: 16px;
-            font-size: 17px; font-weight: 700; color: #fff; cursor: pointer;
-            background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .12);
+            pointer-events: auto;
+            width: 68px; height: 68px; padding: 0; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px; font-weight: 700; line-height: 1; color: #fff; cursor: pointer;
+            background: rgba(255, 255, 255, .10); border: 1px solid rgba(255, 255, 255, .16);
+            backdrop-filter: blur(8px);
         }
-        .bar button:active { transform: scale(.95); }
+        .bar button:active { transform: scale(.92); }
         .bar #next { background: var(--orange); border-color: transparent; color: #1a1206; }
 
         /* QR de conexão (só no palco): canto inferior direito, discreto (RF-02/03) */
@@ -93,8 +97,8 @@
         @media (max-height: 520px) {
             .status { padding: 6px 10px; }
             .status .title { font-size: 12px; max-width: 34vw; }
-            .bar { bottom: 8px; }
-            .bar button { flex: none; padding: 9px 26px; font-size: 14px; }
+            .bar { bottom: 10px; padding: 0 14px; }
+            .bar button { width: 54px; height: 54px; font-size: 24px; }
             .qr img { width: 120px; height: 120px; }
         }
     </style>
@@ -114,8 +118,8 @@
     </div>
 
     <div class="bar">
-        <button id="prev">◀ Voltar</button>
-        <button id="next">Avançar ▶</button>
+        <button id="prev" title="Voltar" aria-label="Voltar">←</button>
+        <button id="next" title="Avançar" aria-label="Avançar">→</button>
     </div>
 
     <div class="qr">

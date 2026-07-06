@@ -146,12 +146,13 @@
             <div><kbd>P</kbd><em>liga / desliga o paint (desenho livre)</em></div>
             <div><kbd>R</kbd><em>abre / fecha o painel de jogada</em></div>
             <div><kbd>V</kbd><em>vira o campo (vertical / horizontal)</em></div>
+            <div><kbd>I</kbd><em>inverte os lados dos times (e a jogada gravada)</em></div>
             <div><kbd>espaço</kbd><em>reproduz / pausa a jogada</em></div>
             <div><kbd>Ctrl+Z</kbd><em>desfaz</em></div>
             <div><kbd>Delete</kbd><em>apaga os jogadores selecionados</em></div>
             <div><kbd>Esc</kbd><em>limpa a seleção</em></div>
             <div><kbd>clique</kbd><em>seleciona o jogador e mostra o nome</em></div>
-            <div><kbd>2x clique</kbd><em>renomeia o jogador</em></div>
+            <div><kbd>2x clique</kbd><em>edita o número e o nome do jogador</em></div>
             <div><kbd>arrasto</kbd><em>no vazio: seleção em caixa; no jogador: move</em></div>
             <div><kbd>⠿</kbd><em>arrasta as janelas de ferramentas</em></div>
         </div>
@@ -168,7 +169,7 @@
         <g id="gFx" pointer-events="none"></g>
         <g id="gTemp" pointer-events="none"></g>
     </svg>
-    <input id="nameInput" type="text" maxlength="26" placeholder="nome do jogador">
+    <input id="nameInput" type="text" maxlength="26" placeholder="nº e nome (ex: 10 Vini)">
     <div id="toolbar">
         <span class="grip" title="Arraste para mover a janela">⠿</span>
         <button class="tb active" data-tool="select" title="Selecionar e mover (arraste no vazio = caixa)">✥</button>
@@ -184,8 +185,10 @@
         <span class="sep"></span>
         <button class="tb" id="btnStyle" title="Alterna entre boneco animado e botão clássico">●</button>
         <button class="tb" id="btnFlip" title="Virar o campo (V)">⟳</button>
+        <button class="tb" id="btnMirror" title="Inverter os lados dos times (I)">⇄</button>
         <button class="tb" id="btnUndo" title="Desfazer (Ctrl+Z)">↺</button>
         <button class="tb" id="btnClear" title="Limpar setas, zonas e desenhos">⌧</button>
+        <button class="tb" id="btnPanel" title="Painel de jogada: gravar e animar quadros (R)">🎬</button>
         <button class="tb" id="btnHelp" title="Comandos e atalhos">?</button>
     </div>
     <div id="recbar">
@@ -311,7 +314,7 @@ var TACTICS = {
         arrows: [],       // {u1,v1,u2,v2,color}
         shapes: [],       // {type,u0,v0,u1,v1,color}
         paints: [],       // {pts:[[u,v],...], color} desenho livre
-        ball: { u: 0.5, v: 0.5 },
+        ball: TACTICS.ball ? { u: TACTICS.ball.u, v: TACTICS.ball.v } : { u: 0.5, v: 0.5 },
         sel: [],          // ids selecionados
         seq: 1
     };
@@ -695,8 +698,9 @@ var TACTICS = {
                 stroke: 'rgba(0,0,0,.8)', 'stroke-width': 3, 'paint-order': 'stroke'
             }, body).textContent = p.num;
 
-            // área de clique/arrasto (invisível)
+            // área de clique/arrasto (invisível): corpo + número flutuante (o duplo clique precisa pegar o número)
             el('circle', { cy: -21, r: 24, fill: '#000', 'fill-opacity': 0 }, g).style.cursor = 'grab';
+            el('circle', { cy: -57, r: 13, fill: '#000', 'fill-opacity': 0 }, g).style.cursor = 'grab';
 
             // balão de nome (selecionado)
             if (sel && p.name) {
@@ -742,6 +746,7 @@ var TACTICS = {
                 var slot = form[Math.min(i, form.length - 1)];
                 var u = slot[0], v = slot[1];
                 if (team.side === 'right') { u = 1 - u; v = 1 - v; }
+                if (pl.u != null) { u = pl.u; v = pl.v; } /* posição absoluta (0..1) no tabuleiro, ignora formação e side */
                 state.players.push({ id: state.seq++, team: t, num: String(pl.num), name: pl.name || '', gk: !!pl.gk, skin: pl.skin || '', hair: pl.hair || '', u: u, v: v });
             });
         });
@@ -764,6 +769,7 @@ var TACTICS = {
 
     /* ---------- interação ---------- */
     var drag = null;
+    var lastTap = { id: null, t: 0 };   // detector de duplo-toque (renomear sem depender do dblclick nativo)
     function playerAt(id) { return state.players.find(function (p) { return p.id === id; }); }
     function pieceFromEvent(e) {
         var t = e.target;
@@ -788,8 +794,11 @@ var TACTICS = {
                 var id = +piece.getAttribute('data-id');
                 var group = state.sel.indexOf(id) >= 0 ? state.sel.slice() : [id];
                 pushUndo();
+                var bp = P(state.ball.u, state.ball.v);
+                var glued = group.some(function (gid) { var q = playerAt(gid); var sp = P(q.u, q.v); return Math.hypot(sp[0] - bp[0], sp[1] - bp[1]) <= 32; });
                 drag = {
                     kind: 'move', id: id, group: group, start: pt, moved: false,
+                    ball0: glued ? { u: state.ball.u, v: state.ball.v } : null,  // bola colada ao portador
                     orig: group.map(function (gid) { var p = playerAt(gid); return { id: gid, u: p.u, v: p.v }; })
                 };
             } else {
@@ -836,6 +845,12 @@ var TACTICS = {
                 var f = F(base[0] + dx, base[1] + dy);
                 p.u = clamp(f[0], 0, 1); p.v = clamp(f[1], 0, 1);
             });
+            if (drag.ball0) {   // bola colada: acompanha o portador enquanto ele se move
+                var bb = P(drag.ball0.u, drag.ball0.v);
+                var bf = F(bb[0] + dx, bb[1] + dy);
+                state.ball.u = clamp(bf[0], 0, 1); state.ball.v = clamp(bf[1], 0, 1);
+                renderBall();
+            }
             renderPieces(false);
         } else if (drag.kind === 'ball' && drag.moved) {
             var fb = F(pt[0], pt[1]);
@@ -876,9 +891,15 @@ var TACTICS = {
         if (drag.kind === 'move') {
             if (!drag.moved) {
                 undoStack.pop(); // clique simples não altera nada
-                var id = drag.id, ix = state.sel.indexOf(id);
-                if (ix >= 0) state.sel.splice(ix, 1); else state.sel.push(id);
-                renderPieces(false);
+                var id = drag.id, now = Date.now();
+                if (lastTap.id === id && now - lastTap.t < 350) {
+                    lastTap.id = null; openRename(id); // duplo clique no jogador: renomeia
+                } else {
+                    lastTap = { id: id, t: now };
+                    var ix = state.sel.indexOf(id);
+                    if (ix >= 0) state.sel.splice(ix, 1); else state.sel.push(id);
+                    renderPieces(false);
+                }
             }
         } else if (drag.kind === 'ball') {
             if (!drag.moved) undoStack.pop();
@@ -918,29 +939,51 @@ var TACTICS = {
         drag = null;
     });
 
-    /* renomear com duplo clique */
+    /* renomear: duplo clique no jogador abre o campo de nº e nome.
+       O disparo real vem do detector de duplo-toque no pointerup (openRename), robusto ao
+       setPointerCapture do arrasto; o dblclick nativo fica só como reforço. */
     var nameInput = document.getElementById('nameInput'), renameId = null;
-    svg.addEventListener('dblclick', function (e) {
-        var piece = pieceFromEvent(e);
-        if (!piece) return;
-        renameId = +piece.getAttribute('data-id');
-        var p = playerAt(renameId), sp = P(p.u, p.v);
+    function openRename(id) {
+        var p = playerAt(id); if (!p) return;
+        renameId = id;
+        var sp = P(p.u, p.v);
         var ctm = svg.getScreenCTM();
         var scr = svg.createSVGPoint(); scr.x = sp[0]; scr.y = sp[1] - (state.style === 'botao' ? 44 : 80);
         var abs = scr.matrixTransform(ctm);
         nameInput.style.left = abs.x + 'px'; nameInput.style.top = abs.y + 'px';
-        nameInput.value = p.name; nameInput.style.display = 'block';
-        nameInput.focus(); nameInput.select();
+        nameInput.value = (p.num ? p.num + ' ' : '') + p.name; nameInput.style.display = 'block';
+        /* focar no próximo tick: focar dentro do handler do clique às vezes não "cola" e o campo fecharia sozinho */
+        setTimeout(function () { nameInput.focus(); nameInput.select(); }, 0);
+    }
+    function commitRename() {
+        if (renameId === null) return;
+        var pl = playerAt(renameId), val = nameInput.value.trim();
+        if (pl) {
+            pushUndo();
+            var m = val.match(/^(\d{1,3})(?:\s+(.*))?$/); /* "10", "10 Vini" ou só "Vini" */
+            if (m) { pl.num = m[1]; pl.name = (m[2] || '').trim(); }
+            else pl.name = val;
+            renderPieces(false);
+        }
+    }
+    function hideNameInput(cancel) {
+        if (!cancel) commitRename();     // Enter, blur e clique fora salvam; só Esc descarta
+        nameInput.style.display = 'none'; renameId = null;
+    }
+    svg.addEventListener('dblclick', function (e) {
+        var piece = pieceFromEvent(e);
+        if (!piece) {
+            var t = document.elementFromPoint(e.clientX, e.clientY);
+            while (t && t !== svg) { if (t.classList && t.classList.contains('piece')) { piece = t; break; } t = t.parentNode; }
+        }
+        if (piece) openRename(+piece.getAttribute('data-id'));
     });
-    function hideNameInput() { nameInput.style.display = 'none'; renameId = null; }
     nameInput.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-            if (renameId !== null) { pushUndo(); playerAt(renameId).name = nameInput.value.trim(); renderPieces(false); }
-            hideNameInput();
-        } else if (e.key === 'Escape') hideNameInput();
+        if (e.key === 'Enter') hideNameInput(false);
+        else if (e.key === 'Escape') hideNameInput(true);
         e.stopPropagation();
     });
-    nameInput.addEventListener('blur', hideNameInput);
+    nameInput.addEventListener('blur', function () { hideNameInput(false); });
 
     /* ---------- toolbar ---------- */
     var toolbar = document.getElementById('toolbar');
@@ -1291,6 +1334,38 @@ var TACTICS = {
         renderPieces(false);
     });
     document.getElementById('btnFlip').addEventListener('click', flip);
+    document.getElementById('btnMirror').addEventListener('click', mirrorSides);
+    function togglePanel(open) {
+        if (typeof open !== 'boolean') open = !recbar.classList.contains('open');
+        recbar.classList.toggle('open', open);
+        if (open) {
+            if (!rec.frames.length) captureFrame();     // 1ª vez: a cena atual vira o quadro 1
+            if (hasFS && !dataDir) pickDataDir();        // conecta data/ e carrega as jogadas
+            else renderPlaysList();
+        }
+    }
+    document.getElementById('btnPanel').addEventListener('click', function () { togglePanel(); });
+    /* inverte os lados dos times: rotação 180° do campo (u→1-u, v→1-v),
+       mesma convenção do side:'right' em buildPlayers. Vale para jogadores,
+       bola, setas, zonas, desenhos e os quadros da jogada gravada. */
+    function mirrorSides() {
+        pushUndo();
+        function rot(pt) { pt[0] = 1 - pt[0]; pt[1] = 1 - pt[1]; }
+        state.players.forEach(function (p) { p.u = 1 - p.u; p.v = 1 - p.v; });
+        state.ball.u = 1 - state.ball.u; state.ball.v = 1 - state.ball.v;
+        state.arrows.forEach(function (a) {
+            a.u1 = 1 - a.u1; a.v1 = 1 - a.v1; a.u2 = 1 - a.u2; a.v2 = 1 - a.v2;
+        });
+        state.shapes.forEach(function (s) {
+            s.u0 = 1 - s.u0; s.v0 = 1 - s.v0; s.u1 = 1 - s.u1; s.v1 = 1 - s.v1;
+        });
+        state.paints.forEach(function (t) { t.pts.forEach(rot); });
+        rec.frames.forEach(function (f) {
+            Object.keys(f.players).forEach(function (id) { rot(f.players[id]); });
+            if (f.ball) rot(f.ball);
+        });
+        renderAll(false);
+    }
     document.getElementById('btnUndo').addEventListener('click', undo);
     document.getElementById('btnClear').addEventListener('click', function () {
         pushUndo(); state.arrows = []; state.shapes = []; state.paints = [];
@@ -1311,18 +1386,10 @@ var TACTICS = {
         var k = e.key.toLowerCase();
         if (k === 'f') toolbar.classList.toggle('hidden');
         else if (k === 'p') setTool(state.tool === 'paint' ? 'select' : 'paint');
-        else if (k === 'r') {
-            recbar.classList.toggle('open');
-            if (recbar.classList.contains('open')) {
-                // ao abrir pela primeira vez, a cena atual já vira o quadro 1
-                if (!rec.frames.length) captureFrame();
-                // padrão obrigatório: conecta a pasta data/ do deck e carrega as jogadas
-                if (hasFS && !dataDir) pickDataDir();
-                else renderPlaysList();
-            }
-        }
+        else if (k === 'r') togglePanel();
         else if (k === ' ') { e.preventDefault(); rec.playing ? pauseRec() : playRec(); }
         else if (k === 'v') flip();
+        else if (k === 'i') mirrorSides();
         else if (k === 'escape') {
             if (help.classList.contains('open')) help.classList.remove('open');
             else if (plays.classList.contains('open')) plays.classList.remove('open');
@@ -1341,6 +1408,57 @@ var TACTICS = {
     /* ---------- go ---------- */
     buildPlayers();
     renderAll(true);
+
+    /* ---------- sync remoto (mira-remote): espelha a mesa no celular ---------
+       A shell do mira-remote lê getState()/onchange e aplica setState(), então
+       mover peça, bola, setas, zonas e desenhos reflete entre notebook e celular.
+       Fora da shell (file://) onchange fica null e nada trafega (regressão zero). */
+    var _remoteLast = null;
+    function getRemoteState() {
+        return {
+            players: state.players.map(function (p) {
+                return { id: p.id, team: p.team, num: p.num, name: p.name, gk: p.gk, skin: p.skin, hair: p.hair, u: p.u, v: p.v };
+            }),
+            ball: { u: state.ball.u, v: state.ball.v },
+            arrows: state.arrows, shapes: state.shapes, paints: state.paints,
+            style: state.style, vertical: state.vertical,
+            rec: { frames: rec.frames, next: rec.next },
+            panelOpen: recbar.classList.contains('open')
+        };
+    }
+    function setRemoteState(st) {
+        if (!st) return;
+        if (Array.isArray(st.players)) {
+            state.players = st.players.map(function (p) {
+                return { id: p.id, team: p.team, num: String(p.num), name: p.name || '', gk: !!p.gk, skin: p.skin || '', hair: p.hair || '', u: p.u, v: p.v };
+            });
+            var maxId = 0; state.players.forEach(function (p) { if (p.id > maxId) maxId = p.id; });
+            state.seq = maxId + 1;
+            state.sel = state.sel.filter(function (id) { return state.players.some(function (p) { return p.id === id; }); });
+        }
+        if (st.ball) { state.ball.u = st.ball.u; state.ball.v = st.ball.v; }
+        if (Array.isArray(st.arrows)) state.arrows = st.arrows;
+        if (Array.isArray(st.shapes)) state.shapes = st.shapes;
+        if (Array.isArray(st.paints)) state.paints = st.paints;
+        if (st.style) state.style = st.style;
+        if (typeof st.vertical === 'boolean') state.vertical = st.vertical;
+        if (st.rec && Array.isArray(st.rec.frames)) { rec.frames = st.rec.frames; rec.next = st.rec.next | 0; recLabel(); }
+        if (typeof st.panelOpen === 'boolean') {
+            recbar.classList.toggle('open', st.panelOpen);
+            if (st.panelOpen) renderPlaysList();
+        }
+        _remoteLast = JSON.stringify(getRemoteState());
+        renderAll(false);
+    }
+    window.miraTactics = { getState: getRemoteState, setState: setRemoteState, onchange: null };
+    setInterval(function () {
+        var cb = window.miraTactics.onchange;
+        if (!cb) return;
+        var json = JSON.stringify(getRemoteState());
+        if (json === _remoteLast) return;
+        _remoteLast = json;
+        cb(JSON.parse(json));
+    }, 120);
 })();
 </script>
 </body>
