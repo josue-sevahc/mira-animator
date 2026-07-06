@@ -37,7 +37,7 @@ O Mira não simula a partida. Ele monta um slide declarativo: a **CONFIG** (`TAC
 
 - **Coordenadas de campo, não de tela.** Tudo usa `u` 0..1 no comprimento (gol esquerdo ao direito) e `v` 0..1 na largura. Virar para a vertical é só remapear (u,v); nada é recalculado.
 - **Número sempre visível, nome sob clique.** O número flutua acima da cabeça do boneco; o nome aparece num balão ao clicar (a peça selecionada escurece).
-- **Goleiro sempre presente** em cada time, com uniforme próprio (`goalie`), o mais fiel possível ao uniforme real. Vale inclusive para cenas/recortes de um lance (ver diretiva abaixo).
+- **Goleiro sempre presente** em cada time, com uniforme próprio (`goalie`), o mais fiel possível ao uniforme real, posicionado pela formação (ver diretiva abaixo).
 - **Campo abre limpo:** sem setas nem zonas pré-desenhadas (`arrows: []`, `shapes: []`).
 
 ## Visual (não simplificar)
@@ -117,8 +117,11 @@ var TACTICS = {
 
 Regras: o goleiro tem `gk: true` e vem primeiro; a ordem dos `players` casa com as posições da formação (goleiro, defesa, meio, ataque); `side` separa as metades; cores em hex (se as camisas forem parecidas, escolha um tom distinto para um deles e avise). O motor desenha campo de futebol; times com nº de jogadores diferente de 11 (ou formação desconhecida) são posicionados em grade.
 
+> ### DIRETIVA: a base começa SEMPRE com os dois times completos em formação (inegociável)
+> O `TACTICS` inicial traz os **dois times completos** (11 x 11, ou o elenco cheio combinado), cada um na sua **formação real**, posicionado pelo motor — **sem `u,v` absolutos no config**. Um gol, jogada ou lance é sempre um **quadro gravado** (`data/*.json`) por cima dessa formação cheia, **nunca** um elenco reduzido com posições fixas como estado inicial. Assim toda mesa abre com o time inteiro no lugar certo, e a animação (fluida no telão e no remote) reconstrói o lance a partir daí. Para congelar um momento específico, navegue até o quadro gravado; não corte o elenco nem cole `u,v` absolutos no `TACTICS`.
+
 > ### DIRETIVA: todo time SEMPRE tem goleiro (inegociável)
-> Nenhuma mesa sai sem os dois goleiros. Isso vale também para **cenas/recortes de um lance** (snapshot com menos de 11 por lado): o goleiro entra do mesmo jeito, com `gk: true` e posição absoluta **no próprio gol** (`v: .5`; `u: .05` para quem defende a esquerda, `u: .95` para quem defende a direita, conforme o `side`/lado do lance). Um time sem goleiro é erro de geração, não uma opção.
+> Nenhuma mesa sai sem os dois goleiros, com `gk: true` e uniforme próprio (`goalie`). Como a base começa 11 x 11 na formação (diretiva acima), o goleiro já entra no gol pela própria formação. Um time sem goleiro é erro de geração, não uma opção.
 >
 > **Cuidado com jogadas salvas ao alterar o elenco:** os `id` são sequenciais na ordem do array (time 1 e depois time 2), então inserir/remover jogador desloca os `id` seguintes e desalinha os `.json` de `data/`. Prefira **acrescentar o goleiro no fim do array do time** e, se algum id posterior mudar, **remapeie as chaves dos frames** nos `.json` afetados (jogadores ausentes de um frame ficam parados na posição da CONFIG, então o goleiro fica no gol durante a jogada).
 
@@ -126,14 +129,14 @@ Regras: o goleiro tem `gk: true` e vem primeiro; a ordem dos `players` casa com 
 
 Só ícones com tooltip, sem rótulos de texto, `zoom: 1.21`, arrastável pela alça ⠿. **SEM botão de ocultar** (decisão explícita: usuário se trancava para fora); ocultar/mostrar é só pela tecla `F`. No modo vertical a barra cola no rodapé do slide e re-centraliza.
 
-Ferramentas: ✥ mover/selecionar (arrasto no vazio = seleção em caixa; grupo move junto), adicionar jogador com um MINI BONECO nas cores de cada time, ➜ seta, ✎ paint (desenho livre com glow, tecla `P`), ▭/◯ zonas, ✕ apagar, paleta de 6 cores (setas/zonas/paint), ●/⛹ estilo das peças, ⟳ virar, ↺ desfazer, ⌧ limpar (setas+zonas+traços), 🎬 abre/fecha o painel de jogada (mesmo que a tecla `R`; essencial no celular/touch), `?` help (painel "COMANDOS" com fechar estilo macOS sempre visível; Esc fecha).
+Ferramentas: ✥ mover/selecionar (arrasto no vazio = seleção em caixa; grupo move junto), adicionar jogador com um MINI BONECO nas cores de cada time, ➜ seta, ✎ paint (desenho livre com glow, tecla `P`), ▭/◯ zonas, ✕ apagar setas/zonas/traços, 🗑 apagar jogador (clique no jogador), 💾 salvar tudo da mesa no navegador, paleta de 6 cores (setas/zonas/paint), ●/⛹ estilo das peças, ⟳ virar, ↺ desfazer, ⌧ limpar (setas+zonas+traços), 🎬 abre/fecha o painel de jogada (mesmo que a tecla `R`; essencial no celular/touch), `?` help (painel "COMANDOS" com fechar estilo macOS sempre visível; Esc fecha).
 
 ## Gravação de jogada (quadros-chave, tecla R)
 
 Janela flutuante própria "JOGADA" (arrastável, aberta/fechada por `R` ou pelo botão 🎬 da barra — o botão é a única via no celular/touch), que nasce dentro do campo, canto inferior esquerdo. No primeiro `R` sem quadros, a cena atual vira o quadro 1 automaticamente.
 
 - ⏺ Quadro captura um snapshot (jogadores + bola); contador `atual/total`.
-- ▶ Play / ⏸ (barra de espaço) interpola entre quadros (1,2s por trecho, ease in-out cúbico), com o trote dos bonecos rodando; tocar no campo pausa.
+- ▶ Play / ⏸ (barra de espaço) interpola entre quadros (1,2s por trecho) numa **linha do tempo única** da jogada: ease só no começo e no fim, movimento linear entre os quadros intermediários (flui sem parar em cada quadro; nunca aplicar ease por trecho, que dá "pula-pula"). O trote dos bonecos roda por cima; tocar no campo pausa.
 - ✓ ATUALIZA o quadro atual com as posições da tela; ⌫ apaga só o quadro atual; ⏮ ◀ ▶| navegam; ✕ apaga todos. **Ordem dos botões (UX, não mudar):** ⏺ · contador · ✓ · ⏮ ◀ ▶ Play ▶| · ⌫ ✕ · | · 💾 ▤ (destrutivos juntos no fim, ⌫ longe do ⏮).
 
 ### Persistência: um JSON por jogada em `data/`
@@ -176,8 +179,8 @@ Não aplique o reflow genérico da skill `mira-vertical`: aqui o campo apenas **
 1. **Interpretar o pedido:** times, cores, nº de jogadores, orientação.
 2. **Pesquisar o último jogo de cada time** (via `WebSearch` + `WebFetch`) e validar os **4 atributos** de cada titular (nome, número, posição, aparência por FOTO), mais cores de camisa, calção e goleiro. Só pule se não houver times reais.
 3. **Copiar o motor de referência** (ver "Fonte da verdade") para `decks/<nome>/index.html` e criar a pasta `decks/<nome>/data/` (vazia) para as jogadas.
-4. **Reescrever o `var TACTICS = { ... }`** com os dados. Não toque no motor abaixo.
-5. **Conferir:** 4 atributos em todos, goleiro com cor própria, formação coerente, cores distintas, campo abrindo limpo.
+4. **Reescrever o `var TACTICS = { ... }`** com os dados: os **dois times completos (11 x 11)** na formação, sem `u,v` absolutos. Não toque no motor abaixo.
+5. **Conferir:** os dois times completos (11 x 11) posicionados pela formação (sem `u,v` no config), 4 atributos em todos, goleiro com cor própria, cores distintas, campo abrindo limpo.
 6. **Se for vertical:** `orientation: 'vertical'` (ou instruir `?vertical=1` / tecla `V`).
 7. **Reportar:** caminho do arquivo, atalhos (F, P, R, V, espaço, Ctrl+Z), as fontes usadas e o que ficou como aproximação.
 
@@ -195,11 +198,17 @@ Não aplique o reflow genérico da skill `mira-vertical`: aqui o campo apenas **
 10. Botões destrutivos do painel de jogada (⌫ ✕) agrupados, longe do ⏮.
 11. Jogada salva é atualizável (nome pré-preenchido + 💾 por linha da lista).
 12. Não quebrar o schema `mira-tactics-play/1` (jogadas já salvas do usuário).
-13. **Todo time sempre tem goleiro** (`gk: true`), inclusive em cenas/recortes de um lance; no snapshot, posicionado no próprio gol.
+13. **Todo time sempre tem goleiro** (`gk: true`), posicionado pela formação (base sempre completa; ver decisão 23).
 14. Renomear jogador (nº e nome) por duplo clique é robusto ao arrasto (detectado no `pointerup`, não só no `dblclick` nativo) e a área clicável cobre o número flutuante; **Enter e clicar fora salvam, Esc cancela**.
 15. O motor expõe `window.miraTactics` (`getState`/`setState`/`onchange`) para o mira-remote espelhar peças, bola, setas, zonas e desenhos entre notebook e celular. Em `file://` (sem shell) `onchange` fica null e nada trafega (regressão zero). Não remover.
 16. O painel de jogada abre também pelo botão 🎬 da barra (não só pela tecla `R`), para funcionar no celular/touch; e o estado da gravação (quadros, índice e painel aberto) entra no sync do `window.miraTactics`, então gravar/abrir num aparelho reflete no outro.
 17. Bola "colada" ao portador: mover um jogador encostado na bola arrasta a bola junto (condução), até o usuário mover a bola para longe (desencosta). Limiar de contato ~32px no espaço do tabuleiro.
+18. Reprodução da jogada numa linha do tempo ÚNICA (ease só no começo/fim, linear entre os quadros): flui sem parar em cada quadro. Nunca voltar ao ease por trecho.
+19. Botão 💾 na barra salva TUDO da mesa no navegador (localStorage por deck): elenco (nº/nome/aparência), posições, bola, setas, zonas, desenhos e a jogada gravada; ao recarregar, restaura (se o elenco-base do TACTICS não mudou). É o único jeito de renomear/editar e não perder no reload.
+20. Duas borrachas distintas: ✕ apaga setas/zonas/traços; 🗑 apaga jogador. Não voltar a apagar jogador com o ✕.
+21. Ao salvar uma jogada em `data/`, o `.json` grava também um `roster` (id → nº/nome/aparência) e o load aplica; o schema segue `mira-tactics-play/1` (campo novo é opcional, jogadas antigas sem `roster` continuam carregando).
+22. **Reprodução (▶ Play) NÃO é sincronizada por stream de posições no remote** (senão engasga o telão). Durante o Play, `getRemoteState` CONGELA o que muda a cada frame (posições e `rec.next`) e emite só UM comando `play: { token, playing, from }`; cada aparelho roda a PRÓPRIA `playRec` local a partir de `play.from` (fluido). O emissor incrementa `token` no `startPlay` (Play do usuário); o espelho ADOTA o token recebido em `setRemoteState` e chama `playRec` sem gerar outro (sem bounce). Enquanto `rec.playing`, `setRemoteState` retorna cedo (não deixa o sync cortar a animação local). Isso mantém o PC 100% fluido, pois some o trabalho por frame que competia com o rAF. **Nunca voltar a transmitir posições por frame durante o Play.**
+23. **A base começa SEMPRE com os dois times completos (11 x 11) na formação definida, sem `u,v` absolutos no config.** Gol/jogada/lance vive em `data/*.json` (quadros gravados) por cima da formação cheia, nunca um elenco reduzido com posições fixas como estado inicial. Para mostrar um momento, navegue até o quadro; não corte o elenco.
 
 ## Checklist
 
@@ -207,7 +216,8 @@ Não aplique o reflow genérico da skill `mira-vertical`: aqui o campo apenas **
 - [ ] **Pesquisou o ÚLTIMO JOGO de cada time e validou os 4 atributos: nome, número, posição e aparência (por foto)**, em sites locais/oficiais, cruzando fontes.
 - [ ] Citou fontes e marcou aproximações (número sem fonte, cor de goleiro, skin/hair em dúvida).
 - [ ] `shorts` e `goalie` preenchidos, fiéis aos uniformes reais.
-- [ ] **Os dois goleiros presentes** (`gk: true`), inclusive em cena/recorte de lance (aí, posicionados no próprio gol).
+- [ ] **Os dois times completos (11 x 11) na formação definida, sem `u,v` absolutos no config**; gol/lance (se houver) mora em `data/*.json`.
+- [ ] **Os dois goleiros presentes** (`gk: true`), posicionados pela formação.
 - [ ] Campo abre limpo (`arrows: []`, `shapes: []`).
 - [ ] Pasta `data/` criada no deck novo.
 - [ ] Título em caixa alta com "x" minúsculo, alinhado à lateral esquerda; `eyebrow` oculto salvo pedido.

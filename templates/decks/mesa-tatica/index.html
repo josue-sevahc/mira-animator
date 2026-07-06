@@ -179,7 +179,8 @@
         <button class="tb" data-tool="paint" title="Paint: desenho livre (P)">✎</button>
         <button class="tb" data-tool="zrect" title="Zona retângulo">▭</button>
         <button class="tb" data-tool="zell" title="Zona círculo">◯</button>
-        <button class="tb" data-tool="erase" title="Apagar jogador, seta, zona ou traço">✕</button>
+        <button class="tb" data-tool="erase" title="Apagar seta, zona ou traço">✕</button>
+        <button class="tb" data-tool="delplayer" title="Apagar jogador (clique no jogador)">🗑</button>
         <span class="sep"></span>
         <span id="palette"></span>
         <span class="sep"></span>
@@ -188,6 +189,7 @@
         <button class="tb" id="btnMirror" title="Inverter os lados dos times (I)">⇄</button>
         <button class="tb" id="btnUndo" title="Desfazer (Ctrl+Z)">↺</button>
         <button class="tb" id="btnClear" title="Limpar setas, zonas e desenhos">⌧</button>
+        <button class="tb" id="btnSaveBoard" title="Salvar tudo da mesa no navegador (elenco, posições, setas, desenhos e a jogada)">💾</button>
         <button class="tb" id="btnPanel" title="Painel de jogada: gravar e animar quadros (R)">🎬</button>
         <button class="tb" id="btnHelp" title="Comandos e atalhos">?</button>
     </div>
@@ -229,6 +231,10 @@
 <script>
 /* =====================================================================
    CONFIG — reescreva apenas este bloco (motor abaixo não muda)
+   REGRA: a base começa SEMPRE com os dois times COMPLETOS (11 x 11, com
+   goleiro) na formação definida, SEM u,v absolutos. Um gol/jogada/lance é
+   um quadro gravado (data/*.json) por cima desta formação cheia, nunca um
+   elenco reduzido com posições fixas aqui no config.
    Escalações do jogo de hoje (oitavas, Copa 2026, 05/07/2026):
    XI provável divulgado pela imprensa (CNN Brasil / Olympics.com).
    Numeração do Brasil: oficial CBF. Numeração da Noruega: 1, 9 e 10
@@ -820,8 +826,10 @@ var TACTICS = {
             var s0 = pt;
             if (state.tool === 'arrow' && piece) { var p0 = playerAt(+piece.getAttribute('data-id')); s0 = P(p0.u, p0.v); }
             drag = { kind: state.tool, start: s0, cur: pt };
+        } else if (state.tool === 'delplayer') {
+            if (piece) { pushUndo(); var dpid = +piece.getAttribute('data-id'); state.players = state.players.filter(function (p) { return p.id !== dpid; }); state.sel = state.sel.filter(function (x) { return x !== dpid; }); renderPieces(false); }
+            return;
         } else if (state.tool === 'erase') {
-            if (piece) { pushUndo(); var pid = +piece.getAttribute('data-id'); state.players = state.players.filter(function (p) { return p.id !== pid; }); state.sel = state.sel.filter(function (x) { return x !== pid; }); renderPieces(false); return; }
             var ai = e.target.getAttribute && e.target.getAttribute('data-arrow');
             if (ai !== null && ai !== undefined) { pushUndo(); state.arrows.splice(+ai, 1); renderArrows(false); return; }
             var zi = e.target.getAttribute && e.target.getAttribute('data-zone');
@@ -1019,7 +1027,7 @@ var TACTICS = {
         palBox.appendChild(s);
     });
     /* ---------- gravação e replay de jogada (keyframes) ---------- */
-    var rec = { frames: [], next: 0, playing: false, raf: null, from: null, t0: 0, SEG_MS: 1200 };
+    var rec = { frames: [], next: 0, playing: false, raf: null, from: null, t0: 0, SEG_MS: 1200, playFrom: 0, playToken: 0 };
     var recbar = document.getElementById('recbar');
     var btnRec = document.getElementById('btnRec'), lblRec = document.getElementById('lblRec');
     var btnPlay = document.getElementById('btnPlay');
@@ -1065,47 +1073,55 @@ var TACTICS = {
     }
     function playRec() {
         var len = rec.frames.length;
-        if (len < 2 && !(len === 1 && rec.next === 0)) { if (len < 2) return; }
-        if (rec.next >= len) { // terminou: recomeça do início
-            applyFrame(rec.frames[0]);
-            rec.next = 1;
-        }
+        if (len < 2) return;
+        if (rec.next >= len) { applyFrame(rec.frames[0]); rec.next = 1; }   // terminou: recomeça do início
+        var startSeg = clamp(rec.next - 1, 0, len - 2);   // primeiro trecho a tocar
+        rec.playFrom = startSeg;                          // início desta jogada (o espelho toca a partir dele)
+        var segCount = (len - 1) - startSeg;              // trechos até o fim da jogada
+        if (segCount < 1) { pauseRec(); return; }
         rec.playing = true;
         btnPlay.textContent = '⏸ Pausa';
         btnPlay.classList.add('playing');
-        rec.from = snapshot();
-        rec.t0 = performance.now();
         var dom = domMap();
         var ballG = gBall.querySelector('.ballg');
+        rec.t0 = performance.now();
+        var total = segCount * rec.SEG_MS;                // UMA linha do tempo para a jogada toda
 
         function tick(now) {
             if (!rec.playing) return;
-            var target = rec.frames[rec.next];
-            if (!target) { pauseRec(); return; }
-            var k = easeInOut(clamp((now - rec.t0) / rec.SEG_MS, 0, 1));
+            var elapsed = clamp(now - rec.t0, 0, total);
+            // ease só no começo e no fim de TODA a jogada; dentro é linear, então o
+            // movimento FLUI através dos quadros sem zerar a velocidade em cada um.
+            var pos = easeInOut(elapsed / total) * segCount;
+            var si = Math.min(Math.floor(pos), segCount - 1), lt = pos - si;
+            var a = rec.frames[startSeg + si], b = rec.frames[startSeg + si + 1];
             state.players.forEach(function (p) {
-                var a = rec.from.players[p.id], b = target.players[p.id];
-                if (!b) return;
-                if (!a) a = b;
-                p.u = a[0] + (b[0] - a[0]) * k;
-                p.v = a[1] + (b[1] - a[1]) * k;
+                var pa = a.players[p.id], pb = b.players[p.id];
+                if (!pb) return;
+                if (!pa) pa = pb;
+                p.u = pa[0] + (pb[0] - pa[0]) * lt;
+                p.v = pa[1] + (pb[1] - pa[1]) * lt;
                 var n = dom[p.id];
                 if (n) { var sp = P(p.u, p.v); n.setAttribute('transform', 'translate(' + sp[0] + ',' + sp[1] + ')'); }
             });
-            state.ball.u = rec.from.ball[0] + (target.ball[0] - rec.from.ball[0]) * k;
-            state.ball.v = rec.from.ball[1] + (target.ball[1] - rec.from.ball[1]) * k;
+            state.ball.u = a.ball[0] + (b.ball[0] - a.ball[0]) * lt;
+            state.ball.v = a.ball[1] + (b.ball[1] - a.ball[1]) * lt;
             if (ballG) { var bp = P(state.ball.u, state.ball.v); ballG.setAttribute('transform', 'translate(' + bp[0] + ',' + bp[1] + ')'); }
-            if (k >= 1) {
-                rec.next++;
-                recLabel();
-                if (rec.next >= rec.frames.length) { pauseRec(); return; }
-                rec.from = snapshot();
-                rec.t0 = now;
-            }
+            rec.next = startSeg + si + 1; recLabel();
+            if (elapsed >= total) { rec.next = len; recLabel(); pauseRec(); return; }
             rec.raf = requestAnimationFrame(tick);
         }
         rec.raf = requestAnimationFrame(tick);
         recLabel();
+    }
+    // Play iniciado pelo usuário (botão/tecla): gera um token novo. No modo remote,
+    // o espelho detecta o token e roda sua PRÓPRIA playRec (sync por comando, não
+    // por stream de posições). O caminho remoto (setRemoteState) chama playRec
+    // direto adotando o token recebido, sem passar por aqui, p/ o comando não quicar.
+    function startPlay() {
+        rec.playToken = (rec.playToken | 0) + 1;
+        _appliedPlayToken = rec.playToken;
+        playRec();
     }
     function stepFrame(dir) {
         if (!rec.frames.length) return;
@@ -1150,7 +1166,7 @@ var TACTICS = {
         recLabel();
     }
     btnRec.addEventListener('click', captureFrame);
-    btnPlay.addEventListener('click', function () { rec.playing ? pauseRec() : playRec(); });
+    btnPlay.addEventListener('click', function () { rec.playing ? pauseRec() : startPlay(); });
     document.getElementById('btnUpdF').addEventListener('click', updateFrame);
     document.getElementById('btnDelF').addEventListener('click', deleteFrame);
     document.getElementById('btnFirstF').addEventListener('click', goFirst);
@@ -1173,6 +1189,14 @@ var TACTICS = {
     function loadPlayData(data, fallbackName) {
         if (!data || !Array.isArray(data.frames) || !data.frames.length) return;
         pauseRec();
+        if (Array.isArray(data.roster)) {   // a jogada traz o elenco (nº e nome) junto
+            var byId = {}; data.roster.forEach(function (s) { byId[s.id] = s; });
+            state.players.forEach(function (p) {
+                var s = byId[p.id]; if (!s) return;
+                p.num = String(s.num); p.name = s.name || '';
+                if (s.gk != null) p.gk = !!s.gk; if (s.skin != null) p.skin = s.skin; if (s.hair != null) p.hair = s.hair;
+            });
+        }
         rec.frames = data.frames;
         applyFrame(rec.frames[0]); rec.next = 1;
         recLabel();
@@ -1183,6 +1207,7 @@ var TACTICS = {
     async function writePlayFile(fname, name) {
         var payload = JSON.stringify({
             schema: 'mira-tactics-play/1', name: name, title: TACTICS.title || '',
+            roster: state.players.map(function (p) { return { id: p.id, num: p.num, name: p.name, gk: p.gk, skin: p.skin, hair: p.hair }; }),
             frames: rec.frames
         }, null, 1);
         var fh = await dataDir.getFileHandle(fname, { create: true });
@@ -1251,6 +1276,7 @@ var TACTICS = {
         if (!n || !rec.frames.length) return;
         var payload = JSON.stringify({
             schema: 'mira-tactics-play/1', name: n, title: TACTICS.title || '',
+            roster: state.players.map(function (p) { return { id: p.id, num: p.num, name: p.name, gk: p.gk, skin: p.skin, hair: p.hair }; }),
             frames: rec.frames
         }, null, 1);
         var fname = n.normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -1345,6 +1371,12 @@ var TACTICS = {
         }
     }
     document.getElementById('btnPanel').addEventListener('click', function () { togglePanel(); });
+    var btnSaveBoard = document.getElementById('btnSaveBoard');
+    btnSaveBoard.addEventListener('click', function () {
+        saveBoard();
+        btnSaveBoard.classList.add('flash');
+        setTimeout(function () { btnSaveBoard.classList.remove('flash'); }, 300);
+    });
     /* inverte os lados dos times: rotação 180° do campo (u→1-u, v→1-v),
        mesma convenção do side:'right' em buildPlayers. Vale para jogadores,
        bola, setas, zonas, desenhos e os quadros da jogada gravada. */
@@ -1387,7 +1419,7 @@ var TACTICS = {
         if (k === 'f') toolbar.classList.toggle('hidden');
         else if (k === 'p') setTool(state.tool === 'paint' ? 'select' : 'paint');
         else if (k === 'r') togglePanel();
-        else if (k === ' ') { e.preventDefault(); rec.playing ? pauseRec() : playRec(); }
+        else if (k === ' ') { e.preventDefault(); rec.playing ? pauseRec() : startPlay(); }
         else if (k === 'v') flip();
         else if (k === 'i') mirrorSides();
         else if (k === 'escape') {
@@ -1405,8 +1437,26 @@ var TACTICS = {
         }
     });
 
+    /* ---------- salvar/carregar TODA a mesa no navegador (botão 💾 da barra) ----------
+       Guarda elenco (nº/nome/aparência), posições, bola, setas, zonas, desenhos e a
+       jogada gravada. Por deck; se o elenco-base do TACTICS mudar, o save é ignorado.
+       Reusa getRemoteState/setRemoteState, que já serializam tudo. */
+    function boardSig() { return JSON.stringify(state.players.map(function (p) { return [p.id, p.num, p.name]; })); }
+    function saveBoard() {
+        try { localStorage.setItem('miraTacticsBoard:' + location.pathname, JSON.stringify({ base: _boardBase, state: getRemoteState() })); } catch (e) {}
+    }
+    function loadBoard() {
+        try {
+            var raw = localStorage.getItem('miraTacticsBoard:' + location.pathname); if (!raw) return;
+            var d = JSON.parse(raw); if (!d || !d.state || d.base !== _boardBase) return;   // elenco-base mudou: ignora
+            setRemoteState(d.state);
+        } catch (e) {}
+    }
+
     /* ---------- go ---------- */
     buildPlayers();
+    var _boardBase = boardSig();   // assinatura do elenco pristino (antes de aplicar o save)
+    loadBoard();
     renderAll(true);
 
     /* ---------- sync remoto (mira-remote): espelha a mesa no celular ---------
@@ -1414,8 +1464,9 @@ var TACTICS = {
        mover peça, bola, setas, zonas e desenhos reflete entre notebook e celular.
        Fora da shell (file://) onchange fica null e nada trafega (regressão zero). */
     var _remoteLast = null;
+    var _appliedPlayToken = 0;   // último token de Play que esta instância já disparou (evita re-trigger)
     function getRemoteState() {
-        return {
+        var st = {
             players: state.players.map(function (p) {
                 return { id: p.id, team: p.team, num: p.num, name: p.name, gk: p.gk, skin: p.skin, hair: p.hair, u: p.u, v: p.v };
             }),
@@ -1423,11 +1474,30 @@ var TACTICS = {
             arrows: state.arrows, shapes: state.shapes, paints: state.paints,
             style: state.style, vertical: state.vertical,
             rec: { frames: rec.frames, next: rec.next },
+            play: { token: rec.playToken | 0, playing: !!rec.playing, from: rec.playFrom | 0 },
             panelOpen: recbar.classList.contains('open')
         };
+        // Durante o Play a jogada roda por rAF (~60fps) direto no DOM. Se o payload de
+        // sync mudasse a cada frame, o poll dispararia stringify + POST ~8x/s na mesma
+        // thread e competiria com o rAF -> engasgo no telão (o PC). Então CONGELA aqui
+        // tudo que varia por frame (posições e rec.next): o payload fica estável, o poll
+        // emite só UM comando de play, e o espelho roda sua PRÓPRIA cópia (via play.from).
+        if (rec.playing) {
+            st.rec.next = rec.playFrom | 0;
+            var f0 = rec.frames[rec.playFrom | 0] || rec.frames[0];
+            if (f0) {
+                st.players.forEach(function (pl) { var t = f0.players[pl.id]; if (t) { pl.u = t[0]; pl.v = t[1]; } });
+                st.ball.u = f0.ball[0]; st.ball.v = f0.ball[1];
+            }
+        }
+        return st;
     }
     function setRemoteState(st) {
         if (!st) return;
+        // Estou tocando a jogada localmente (rAF): ignoro o sync remoto para não
+        // cortar a MINHA animação. Cada instância toca sua cópia até o fim e
+        // aterrissa no mesmo quadro final (os frames são idênticos). [anti-engasgo]
+        if (rec.playing) return;
         if (Array.isArray(st.players)) {
             state.players = st.players.map(function (p) {
                 return { id: p.id, team: p.team, num: String(p.num), name: p.name || '', gk: !!p.gk, skin: p.skin || '', hair: p.hair || '', u: p.u, v: p.v };
@@ -1447,8 +1517,23 @@ var TACTICS = {
             recbar.classList.toggle('open', st.panelOpen);
             if (st.panelOpen) renderPlaysList();
         }
-        _remoteLast = JSON.stringify(getRemoteState());
         renderAll(false);
+        // Comando de reprodução (sync por COMANDO): quando o emissor começa um Play,
+        // chega um token novo com playing=true; rodo minha PRÓPRIA playRec a partir de
+        // play.from (fluido, sem amostrar ~8fps). playRec vem DEPOIS do renderAll porque
+        // renderPieces recria o DOM das peças e deixaria as refs do rAF órfãs se viesse antes.
+        if (st.play) {
+            var tok = st.play.token | 0;
+            if (st.play.playing && tok !== _appliedPlayToken) {
+                _appliedPlayToken = tok;
+                rec.playToken = tok;                 // adoto o token do emissor: não gero um novo (sem eco/bounce)
+                rec.next = (st.play.from | 0) + 1;
+                playRec();
+            } else {
+                _appliedPlayToken = tok;             // pausa/estado final: registra sem re-disparar
+            }
+        }
+        _remoteLast = JSON.stringify(getRemoteState());
     }
     window.miraTactics = { getState: getRemoteState, setState: setRemoteState, onchange: null };
     setInterval(function () {

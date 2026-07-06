@@ -24,6 +24,7 @@ Ativa num deck existente a camada do **mira-remote**: um servidor leve serve o d
 ## Modelo mental
 
 - **Sincroniza-se estado, não quadros.** O canal move `{slide, reveal}` e os traços do telestrator; a animação de cada slide (Regra Zero) roda local em cada tela. Na **mesa tática** também viaja o estado das peças/bola/setas/zonas/desenhos, além do painel de jogada e dos quadros gravados: o board expõe `window.miraTactics` e a shell publica em `/tactics` (contrato no servidor). O painel de jogada abre pelo botão 🎬 da barra (no celular não há tecla `R`).
+- **Reprodução da jogada (▶ Play) viaja por COMANDO, não por posições a cada frame.** Durante o Play, o `getRemoteState` da mesa congela posições e `rec.next` e emite só um `play: { token, playing, from }`; cada aparelho roda a própria `playRec` local (fluido). Sem isso, o sync serializava/postava o estado ~8x/s competindo com o `requestAnimationFrame` e **engasgava o telão (PC)**. É a razão de o Play ser fluido no modo remote; não voltar a transmitir posições por frame durante o Play.
 - **Palco 16:9 fixo.** A shell roda o deck num iframe de exatamente 1280x720, escalado para caber em qualquer tela: a geometria do slide é idêntica no notebook e no celular, e os desenhos caem no mesmo lugar (viajam em coordenadas do palco).
 - **Papéis por IP, sem login:** localhost = palco; primeiro IP externo = controle; demais = espelho (só acompanham; comandos deles são ignorados em silêncio).
 - **Camada opcional.** Nada no `index.html` é alterado. Sem o atalho, o deck abre em `file://` como sempre (regressão zero).
