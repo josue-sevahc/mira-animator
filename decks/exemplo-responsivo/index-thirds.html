@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Exemplo Responsivo Mira (regra dos tercos)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+/* @MIRA:THEME:START */
+:root {
+    --mira-primary: #FF904D;
+    --mira-bg: #000000;
+    --mira-text: #ffffff;
+    --mira-text-soft: rgba(255, 255, 255, 0.70);
+    --mira-card-bg: rgba(255, 255, 255, 0.05);
+    --mira-card-border: rgba(255, 255, 255, 0.10);
+    --mira-glow-soft: rgba(255, 144, 77, 0.15);
+    --mira-glow-strong: rgba(255, 144, 77, 0.25);
+    --mira-icon-bg: rgba(255, 144, 77, 0.15);
+    --mira-icon-border: rgba(255, 144, 77, 0.30);
+    --mira-pill-bg: rgba(255, 255, 255, 0.04);
+    --mira-pill-border: rgba(255, 255, 255, 0.08);
+    --mira-stage-glow: rgba(255, 144, 77, 0.06);
+    --mira-accent-2: #FFC766;
+}
+body { background: var(--mira-bg); min-height: 100vh; color: var(--mira-text); font-family: 'Inter', sans-serif; }
+.primary-color { color: var(--mira-primary); }
+.glass-card { background: var(--mira-card-bg); backdrop-filter: blur(10px); border: 1px solid var(--mira-card-border); box-shadow: 0 10px 30px var(--mira-glow-soft); border-radius: 0.75rem; }
+.attribute-pill { background: var(--mira-pill-bg); border: 1px solid var(--mira-pill-border); border-radius: 9999px; }
+.anim-stage { width: 100%; aspect-ratio: 16 / 9; background: radial-gradient(circle at 50% 50%, var(--mira-stage-glow), transparent 70%); border-radius: 8px; overflow: hidden; position: relative; }
+.anim-stage svg { display: block; width: 100%; height: 100%; }
+.replay-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--mira-pill-bg); border: 1px solid var(--mira-pill-border); color: var(--mira-text-soft); border-radius: 9999px; padding: 6px 14px; font-size: 12px; cursor: pointer; }
+.text-soft { color: var(--mira-text-soft); }
+/* @MIRA:THEME:END */
+
+/* DIRETIVA MIRA: título da CAPA (primeiro slide/header) com quebra equilibrada,
+   nunca linha longa + palavra/artigo/preposição solto. Só a capa. Ver agents/_shared/titulo-capa.md */
+body > section:first-of-type h1, body > section:first-of-type h2 { text-wrap: balance; }
+
+/* === CONTROLES DE SLIDE === */
+html { scroll-behavior: smooth; }
+#mira-progress { position: fixed; top: 0; left: 0; height: 3px; width: 0%; background: linear-gradient(90deg, var(--mira-primary), var(--mira-accent-2), var(--mira-primary)); background-size: 200% 100%; animation: mira-shimmer 2s linear infinite; z-index: 9999; transition: width 0.1s linear; box-shadow: 0 0 10px var(--mira-glow-strong); }
+@keyframes mira-shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+#mira-next { position: fixed; bottom: 32px; right: 32px; width: 48px; height: 48px; border-radius: 50%; background: var(--mira-primary); color: var(--mira-bg); display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; opacity: 0; transform: translateY(20px); transition: all 0.3s ease; z-index: 9998; box-shadow: 0 4px 20px var(--mira-glow-strong); }
+#mira-next.visible { opacity: 1; transform: translateY(0); }
+    </style>
+<style id="mira-formato-thirds">
+  :root { --thirds-align: flex-start; --thirds-width: 66.667%; }
+  body > section {
+    align-items: var(--thirds-align) !important;
+    background: linear-gradient(to right, var(--mira-bg, #000) 0, var(--mira-bg, #000) 66.667%, #333333 66.667%, #333333 100%) !important;
+  }
+  body > section > div { width: var(--thirds-width) !important; max-width: var(--thirds-width) !important; }
+  body > section h2 { font-size: clamp(28px, 4vh, 44px) !important; line-height: 1.1 !important; }
+  body > section:has(.glass-card) .text-center > p { display: none !important; }
+  body > section:has(.glass-card) .text-center { margin-bottom: 8px !important; }
+  body > section .glass-card { background: none !important; border: none !important; box-shadow: none !important; backdrop-filter: none !important; padding: 0 !important; }
+  body > section .glass-card > div:first-child, body > section .glass-card > div:last-child { display: none !important; }
+  .anim-stage { height: auto !important; aspect-ratio: 1280 / 1080 !important; }
+</style>
+</head>
+
+<body>
+    <div id="mira-progress"></div>
+    <button id="mira-next" aria-label="Próximo slide">
+        <i data-lucide="chevron-down" class="w-6 h-6" id="mira-next-icon"></i>
+    </button>
+
+    <!-- ============ CAPA (sem glass-card) ============ -->
+    <section class="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+        <div class="w-full max-w-5xl">
+            <p class="uppercase tracking-[6px] text-white/50 text-sm mb-4">Exemplo Mira</p>
+            <h1 class="text-6xl md:text-7xl font-black mb-4">Responsividade em <span class="primary-color italic">quatro formatos</span></h1>
+            <p class="text-white/60 text-xl md:text-2xl">Um mesmo deck, adaptado por metafora para 16:9, 9:16, 1:1 e tercos.</p>
+        </div>
+    </section>
+
+    <!-- ============ SLIDE 1: FLUXO ============ -->
+    <section class="min-h-screen flex flex-col items-center justify-center px-6 pt-3 pb-6">
+        <div class="w-full max-w-6xl">
+            <div class="text-center mb-2">
+                <h2 class="text-4xl md:text-5xl font-bold mb-2">Do dado a <span class="primary-color italic">decisao</span></h2>
+                <p class="text-white/60 italic text-lg md:text-xl">Uma particula percorre o caminho, etapa a etapa.</p>
+            </div>
+            <div class="glass-card rounded-2xl p-1 md:p-2">
+                <div class="flex items-center justify-between mb-2 px-1">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--mira-icon-bg);">
+                            <i data-lucide="workflow" class="w-5 h-5 primary-color"></i>
+                        </div>
+                        <div>
+                            <p class="text-white font-bold text-sm">Pipeline em quatro etapas</p>
+                            <p class="text-white/50 text-xs italic">Fluxo continuo, da coleta a decisao.</p>
+                        </div>
+                    </div>
+                    <button id="replay-fluxo" class="replay-btn" type="button"><i data-lucide="rotate-cw" class="w-4 h-4"></i> Replay</button>
+                </div>
+                <div class="anim-stage" id="fluxo-stage"></div>
+                <div class="border-t border-white/10 pt-1 mt-1 mb-1">
+                    <p class="text-xs uppercase tracking-[3px] text-white/40 text-center mb-1">As quatro etapas</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <div class="attribute-pill text-center p-1 rounded-xl"><p class="text-sm font-semibold">Coletar</p></div>
+                        <div class="attribute-pill text-center p-1 rounded-xl"><p class="text-sm font-semibold">Processar</p></div>
+                        <div class="attribute-pill text-center p-1 rounded-xl"><p class="text-sm font-semibold">Analisar</p></div>
+                        <div class="attribute-pill text-center p-1 rounded-xl"><p class="text-sm font-semibold">Decidir</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SLIDE 2: ORBITAL ============ -->
+    <section class="min-h-screen flex flex-col items-center justify-center px-6 pt-3 pb-6">
+        <div class="w-full max-w-6xl">
+            <div class="text-center mb-2">
+                <h2 class="text-4xl md:text-5xl font-bold mb-2">Tudo gira em torno do <span class="primary-color italic">dado</span></h2>
+                <p class="text-white/60 italic text-lg md:text-xl">O nucleo no centro, os satelites em orbita continua.</p>
+            </div>
+            <div class="glass-card rounded-2xl p-1 md:p-2">
+                <div class="flex items-center justify-between mb-2 px-1">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--mira-icon-bg);">
+                            <i data-lucide="orbit" class="w-5 h-5 primary-color"></i>
+                        </div>
+                        <div>
+                            <p class="text-white font-bold text-sm">Nucleo e satelites</p>
+                            <p class="text-white/50 text-xs italic">Orbita elitica que se adapta ao formato.</p>
+                        </div>
+                    </div>
+                    <button id="replay-orbital" class="replay-btn" type="button"><i data-lucide="rotate-cw" class="w-4 h-4"></i> Replay</button>
+                </div>
+                <div class="anim-stage" id="orbital-stage"></div>
+                <div class="border-t border-white/10 pt-1 mt-1 mb-1">
+                    <p class="text-xs uppercase tracking-[3px] text-white/40 text-center mb-1">Quatro fontes em orbita</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <div class="attribute-pill text-center p-1 rounded-xl"><p class="text-sm font-semibold">Sensores</p></div>
+                        <div class="attribute-pill text-center p-1 rounded-xl"><p class="text-sm font-semibold">Logs</p></div>
+                        <div class="attribute-pill text-center p-1 rounded-xl"><p class="text-sm font-semibold">Usuarios</p></div>
+                        <div class="attribute-pill text-center p-1 rounded-xl"><p class="text-sm font-semibold">APIs</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ ENCERRAMENTO (sem glass-card) ============ -->
+    <section class="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+        <div class="w-full max-w-4xl">
+            <h2 class="text-5xl md:text-6xl font-black mb-4">Mesmo conteudo, <span class="primary-color italic">todo formato</span></h2>
+            <p class="text-white/60 text-lg md:text-xl">16:9 na tela, 9:16 no mobile, 1:1 no feed, tercos com espaco lateral.</p>
+        </div>
+    </section>
+
+    <script>
+        lucide.createIcons();
+        // === AUTO-AJUSTE DE TITULO (encolhe ate 2 linhas) ===
+        (function () {
+          const MAX_LINES = 2, MIN_FONT = 18;
+          function fitTitles() {
+            document.querySelectorAll('body > section h2').forEach(h2 => {
+              h2.style.removeProperty('font-size');
+              let font = parseFloat(getComputedStyle(h2).fontSize), guard = 0;
+              while (h2.scrollHeight > parseFloat(getComputedStyle(h2).lineHeight) * MAX_LINES + 2 && font > MIN_FONT && guard < 90) {
+                font -= 1; h2.style.setProperty('font-size', font + 'px', 'important'); guard++;
+              }
+            });
+          }
+          window.addEventListener('load', fitTitles);
+          if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitTitles);
+          window.addEventListener('resize', () => { clearTimeout(window.__fitT); window.__fitT = setTimeout(fitTitles, 150); });
+        })();
+
+        const PRIMARY = getComputedStyle(document.documentElement).getPropertyValue('--mira-primary').trim();
+
+        /* @MIRA:FMT:START — este bloco muda por formato (16:9, 9:16, 1:1, thirds) */
+        const FMT = {
+            fluxo:   { W: 960, H: 810, axis: 'v' },
+            orbital: { W: 960, H: 810 }
+        };
+        /* @MIRA:FMT:END */
+
+        // ===== FLUXO: particula entre nos (eixo h no 16:9, v nos formatos altos) =====
+        (function () {
+            const ETAPAS = ['Coletar', 'Processar', 'Analisar', 'Decidir'];
+            const { W, H, axis } = FMT.fluxo;
+            const horizontal = axis === 'h';
+            const svg = d3.select('#fluxo-stage').append('svg')
+                .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+            const scale = d3.scalePoint().domain(d3.range(ETAPAS.length))
+                .range(horizontal ? [W * 0.12, W * 0.88] : [H * 0.12, H * 0.88]);
+            const cross = horizontal ? H / 2 : W / 2;
+            const R = Math.round(Math.min(W, H) * 0.055);
+
+            function pos(i) { return horizontal ? [scale(i), cross] : [cross, scale(i)]; }
+
+            function animateFluxo() {
+                clearInterval(window.__fluxoPulse);
+                window.__fluxoGen = (window.__fluxoGen || 0) + 1;
+                const myGen = window.__fluxoGen;
+                svg.selectAll('*').remove();
+
+                const [x0, y0] = pos(0), [xN, yN] = pos(ETAPAS.length - 1);
+                svg.append('line').attr('x1', x0).attr('y1', y0).attr('x2', xN).attr('y2', yN)
+                    .attr('stroke', 'rgba(255,255,255,0.12)').attr('stroke-width', 2);
+
+                const nodes = svg.selectAll('g.node').data(ETAPAS).join('g')
+                    .attr('class', 'node').attr('transform', (d, i) => `translate(${pos(i)[0]},${pos(i)[1]})`);
+                nodes.append('circle').attr('r', 0).attr('fill', 'rgba(255,255,255,0.06)')
+                    .attr('stroke', PRIMARY).attr('stroke-width', 2)
+                    .transition().delay((d, i) => 300 + i * 250).duration(600).ease(d3.easeBackOut).attr('r', R);
+                nodes.append('text').text((d, i) => i + 1).attr('text-anchor', 'middle').attr('dy', 6)
+                    .attr('fill', PRIMARY).attr('font-size', 24).attr('font-weight', 800)
+                    .attr('opacity', 0).transition().delay((d, i) => 600 + i * 250).attr('opacity', 1);
+                nodes.append('text').text(d => d)
+                    .attr('text-anchor', horizontal ? 'middle' : 'start')
+                    .attr('dy', horizontal ? R + 30 : 6).attr('dx', horizontal ? 0 : R + 18)
+                    .attr('fill', 'rgba(255,255,255,0.7)').attr('font-size', 26)
+                    .attr('opacity', 0).transition().delay((d, i) => 700 + i * 250).attr('opacity', 1);
+
+                const particle = svg.append('circle').attr('r', Math.round(R * 0.32)).attr('fill', PRIMARY)
+                    .attr('cx', x0).attr('cy', y0).style('filter', `drop-shadow(0 0 8px ${PRIMARY})`);
+                function travel() {
+                    if (myGen !== window.__fluxoGen) return;
+                    particle.attr('cx', x0).attr('cy', y0).attr('opacity', 1)
+                        .transition().duration(3200).ease(d3.easeCubicInOut).attr('cx', xN).attr('cy', yN)
+                        .transition().duration(300).attr('opacity', 0)
+                        .on('end', () => { if (myGen === window.__fluxoGen) travel(); });
+                }
+                travel();
+
+                window.__fluxoPulse = setInterval(() => {
+                    if (myGen !== window.__fluxoGen) return;
+                    nodes.selectAll('circle').transition().delay((d, i) => i * 200).duration(350).attr('r', R + 5)
+                        .transition().duration(350).attr('r', R);
+                }, 3500);
+            }
+            const stage = document.getElementById('fluxo-stage');
+            new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) animateFluxo(); }), { threshold: 0.4 }).observe(stage);
+            document.getElementById('replay-fluxo').addEventListener('click', animateFluxo);
+        })();
+
+        // ===== ORBITAL: nucleo + satelites (elipse rx/ry derivada do formato) =====
+        (function () {
+            const FONTES = ['Sensores', 'Logs', 'Usuarios', 'APIs'];
+            const { W, H } = FMT.orbital;
+            const svg = d3.select('#orbital-stage').append('svg')
+                .attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+            const cx = W / 2, cy = H / 2;
+            const rx = W * 0.32, ry = H * 0.32;
+            const R = Math.round(Math.min(W, H) * 0.05);
+
+            function animateOrbital() {
+                window.__orbGen = (window.__orbGen || 0) + 1;
+                const myGen = window.__orbGen;
+                svg.selectAll('*').remove();
+
+                svg.append('ellipse').attr('cx', cx).attr('cy', cy).attr('rx', rx).attr('ry', ry)
+                    .attr('fill', 'none').attr('stroke', 'rgba(255,255,255,0.10)').attr('stroke-width', 1.5);
+
+                const core = svg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 0)
+                    .attr('fill', 'rgba(255,144,77,0.15)').attr('stroke', PRIMARY).attr('stroke-width', 2.5)
+                    .style('filter', `drop-shadow(0 0 14px ${PRIMARY})`);
+                core.transition().duration(700).ease(d3.easeBackOut).attr('r', R * 1.5);
+                svg.append('text').text('dado').attr('x', cx).attr('y', cy).attr('dy', 8)
+                    .attr('text-anchor', 'middle').attr('fill', PRIMARY).attr('font-size', 26).attr('font-weight', 800)
+                    .attr('opacity', 0).transition().delay(700).attr('opacity', 1);
+
+                const sats = svg.selectAll('g.sat').data(FONTES.map((f, i) => ({ f, a0: (i / FONTES.length) * Math.PI * 2 })))
+                    .join('g').attr('class', 'sat');
+                sats.append('circle').attr('r', 0).attr('fill', 'rgba(255,255,255,0.06)')
+                    .attr('stroke', PRIMARY).attr('stroke-width', 2)
+                    .transition().delay((d, i) => 400 + i * 180).duration(500).ease(d3.easeBackOut).attr('r', R);
+                sats.append('text').text(d => d.f).attr('text-anchor', 'middle').attr('dy', 6)
+                    .attr('fill', 'rgba(255,255,255,0.8)').attr('font-size', 22)
+                    .attr('opacity', 0).transition().delay((d, i) => 700 + i * 180).attr('opacity', 1);
+
+                function frame() {
+                    if (myGen !== window.__orbGen) return;
+                    const now = performance.now();
+                    sats.attr('transform', d => {
+                        const a = d.a0 + now * 0.00035;
+                        return `translate(${cx + Math.cos(a) * rx},${cy + Math.sin(a) * ry})`;
+                    });
+                    core.transition().duration(0); // no-op keep ref
+                    requestAnimationFrame(frame);
+                }
+                requestAnimationFrame(frame);
+
+                setInterval(() => {
+                    if (myGen !== window.__orbGen) return;
+                    core.transition().duration(600).attr('r', R * 1.7).transition().duration(600).attr('r', R * 1.5);
+                }, 1600);
+            }
+            const stage = document.getElementById('orbital-stage');
+            new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) animateOrbital(); }), { threshold: 0.4 }).observe(stage);
+            document.getElementById('replay-orbital').addEventListener('click', animateOrbital);
+        })();
+
+        // === NAVEGACAO card-a-card ===
+        (function () {
+            const secs = Array.from(document.querySelectorAll('body > section'));
+            if (!secs.length) return;
+            const progress = document.getElementById('mira-progress');
+            const nextBtn = document.getElementById('mira-next');
+            const nextIcon = document.getElementById('mira-next-icon');
+            const atBottom = () => (window.scrollY + window.innerHeight) >= (document.documentElement.scrollHeight - 100);
+            function currentIndex() { const y = window.scrollY + window.innerHeight * 0.3; let idx = -1; for (let i = 0; i < secs.length; i++) if (secs[i].offsetTop <= y) idx = i; return idx; }
+            function goTo(i) { const idx = Math.max(0, Math.min(secs.length - 1, i)); secs[idx].scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            window.addEventListener('scroll', () => {
+                const docH = document.documentElement.scrollHeight - window.innerHeight;
+                progress.style.width = (docH > 0 ? (window.scrollY / docH) * 100 : 0) + '%';
+                nextBtn.classList.toggle('visible', window.scrollY > 300);
+                nextIcon.setAttribute('data-lucide', atBottom() ? 'chevron-up' : 'chevron-down');
+                lucide.createIcons();
+            });
+            nextBtn.addEventListener('click', () => { if (atBottom()) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; } goTo(currentIndex() + 1); });
+            document.addEventListener('keydown', (e) => {
+                if (['ArrowRight', 'ArrowDown', 'PageDown'].includes(e.key)) { e.preventDefault(); goTo(currentIndex() + 1); }
+                else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); const idx = currentIndex(); if (idx <= 0) window.scrollTo({ top: 0, behavior: 'smooth' }); else goTo(idx - 1); }
+                else if (e.key === 'Home') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+                else if (e.key === 'End') { e.preventDefault(); goTo(secs.length - 1); }
+                else if (e.key.toLowerCase() === 'f') { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+            });
+        })();
+    </script>
+</body>
+
+</html>

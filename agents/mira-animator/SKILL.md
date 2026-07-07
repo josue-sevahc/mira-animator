@@ -75,6 +75,7 @@ Textos visíveis em português brasileiro, acentuação 100% correta, UTF-8 dire
 - **Sem ícone no título.** Não coloque `icon-hero` nem qualquer `<i data-lucide>` acima ou ao lado do `<h2>` do slide. O título é só texto (com ênfase via `<span class="primary-color italic">`). Ícones continuam permitidos dentro do card (header da animação, pílulas de atributo), nunca no título.
 - **No máximo 6 palavras no título**, a não ser que o usuário peça explicitamente mais. Se o título natural passar de 6 palavras, encurte mantendo o sentido.
 - **Título colado no topo.** A `<section>` usa `px-6 pt-3 pb-6` e o wrapper do card não leva `pt-10 md:pt-16`. O bloco do título fecha com `mb-2`.
+- **Título da CAPA com quebra equilibrada (diretiva).** O título do primeiro slide (a capa, o "header" do deck) segue `agents/_shared/titulo-capa.md`: o CSS base do deck deve levar `text-wrap: balance` escopado só à capa (`body > section:first-of-type h1, body > section:first-of-type h2`), para nunca quebrar com artigo/preposição solto. Vale só para a capa; os slides de conteúdo não precisam.
 
 ## Quando o Usuário Aciona a Skill
 

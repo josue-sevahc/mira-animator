@@ -113,6 +113,13 @@ Apos gerar o `index.html` e copiar todos os assets, **chame a skill `/mira-valid
 - **Títulos de card:** `text-3xl` ou `text-4xl` (NÃO `text-5xl`)
 - **Corpo:** `text-base` ou `text-lg`
 
+### Responsividade (OBRIGATÓRIO — todo slide 16:9 tem que abrir bem no celular)
+- **Regra inegociável:** o aluno manda o deck pro amigo e ele vê no celular. Todo slide 16:9 DEVE reorganizar em retrato — sem `mobile.html` separado, sem "print cortado".
+- **Camada base:** o `layout_base.html` já traz o bloco `@MIRA:RESPONSIVE` (reflow mobile-first: fontes encolhem via `clamp`, grids empilham, padding reduz, palcos escalam). NUNCA remova esse bloco. Fonte da verdade: `templates/themes/responsive.css`.
+- **Escreva mobile-first mesmo assim:** títulos com breakpoint (`text-4xl md:text-6xl`, nunca `text-6xl` sozinho num H1); grids sempre com `grid-cols-1 md:grid-cols-2`; nada de largura fixa em `px`.
+- **Sem overflow horizontal:** imagens/tabelas/svg com `max-w-full`; tabela larga dentro de `overflow-x-auto`.
+- **`<meta viewport>`** deve conter `width=device-width` e `viewport-fit=cover`.
+
 ### Imagens do Capítulo
 - **OBRIGATÓRIO:** Verificar `decks/<deck>/assets/` e incluir as imagens relevantes nos slides correspondentes
 - Usar `class="w-full rounded-lg"` para imagens de largura total

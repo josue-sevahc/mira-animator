@@ -16,3 +16,7 @@ no_permissions.md
 
 # Deck de apresentacao (mantido apenas local, contem videos pesados)
 decks/apresentacao-mira/
+
+# Reversa
+.reversa/config.user.toml
+_reversa_sdd/
