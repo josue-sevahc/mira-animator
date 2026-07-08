@@ -1,14 +1,11 @@
 ---
 name: mira-chart-race
 description: >-
-  Cria um slide de GRÁFICO DE CORRIDA no Mira: dados temporais animados, com o
-  período correndo na tela; toca uma vez e para no fim. Dois modos (o usuário escolhe):
-  "bars", corrida de barras que trocam de posição no ranking a cada período
-  (tipo "linguagens mais usadas ao longo dos anos"), e "lines", linhas
-  desenhadas com o rótulo perseguindo a ponta (tipo "fatia de mercado ao longo
-  do tempo"). Recebe os dados em CSV largo (1a coluna = período, demais colunas
-  = séries), embutidos no slide sem fetch, então roda por file:// e offline.
-  Gera uma section pronta para o index.html do deck, no tema do Mira e em D3 v7.
+  Cria um slide de gráfico de corrida no Mira: série temporal animada que corre
+  no tempo, toca uma vez e para no fim. Dois modos: "bars" (barras que trocam de
+  posição no ranking) e "lines" (linhas desenhadas com o rótulo perseguindo a
+  ponta); dados em CSV largo embutidos, roda por file:// offline, gera section em
+  D3 v7 no tema do Mira.
   Use SEMPRE que o usuário disser /mira-chart-race, gráfico de corrida, corrida
   de barras, bar chart race, racing chart, gráfico animado no tempo, dados
   temporais animados, ranking ao longo do tempo, barras que mudam de posição,
@@ -18,9 +15,9 @@ description: >-
 
 # Skill: Mira Chart Race, dados temporais viram corrida animada
 
-Pega uma série temporal (vários períodos, várias séries) e devolve um slide onde os dados **correm no tempo**: o período avança na tela, as barras trocam de posição (ou as linhas vão sendo desenhadas) e, ao chegar no fim, **para e permanece no quadro final** (não reinicia). É o gráfico animado de "X ao longo do tempo" (linguagens mais usadas, fatia de mercado, população de países, etc.).
+Pega uma série temporal (vários períodos, várias séries) e devolve um slide onde os dados **correm no tempo**: o período avança, as barras trocam de posição (ou as linhas vão sendo desenhadas) e, ao chegar no fim, para no quadro final (não reinicia). É o gráfico animado de "X ao longo do tempo" (linguagens mais usadas, fatia de mercado, população, etc.).
 
-> **Artefato de referência (exemplo vivo):** `decks/teste-chart-race/index.html` tem os dois modos funcionando com dados de exemplo. Use-o para conferir o resultado e copiar medidas. O motor abaixo é o mesmo desse arquivo.
+> **Artefato de referência:** `decks/teste-chart-race/index.html` tem os dois modos com dados de exemplo. O motor abaixo é o mesmo desse arquivo.
 
 ## Regras herdadas (obrigatórias)
 
@@ -32,7 +29,7 @@ Pega uma série temporal (vários períodos, várias séries) e devolve um slide
 
 ## O modelo mental
 
-O slide recebe **um CSV no formato largo** e transforma cada período num quadro da animação. Não há servidor nem `fetch`: os dados entram **embutidos inline** no `<script>`, então o slide roda por duplo-clique (`file://`) e offline.
+O slide recebe **um CSV no formato largo** e transforma cada período num quadro da animação. Sem servidor nem `fetch`: os dados entram **embutidos inline** no `<script>`, então o slide roda por duplo-clique (`file://`) e offline.
 
 | Modo | O que faz | Quando usar |
 |---|---|---|
@@ -56,20 +53,20 @@ Se o usuário colar uma tabela no chat em vez de um arquivo, monte o CSV a parti
 
 ## Passos
 
-1. **Obter os dados.** Leia o CSV que o usuário forneceu (ferramenta Read) ou monte-o a partir da tabela colada. Confirme que a 1ª coluna é o período e que as linhas estão em ordem cronológica.
+1. **Obter os dados.** Leia o CSV fornecido (Read) ou monte-o da tabela colada. Confirme que a 1ª coluna é o período e as linhas estão em ordem cronológica.
 2. **Definir os parâmetros.**
-   - `mode`: `bars` ou `lines`. Se o usuário indicou, use. Se não, escolha pela tabela acima e siga sem travar (barras é o padrão).
-   - `topN`: quantas barras mostrar por quadro (padrão 12; ignorado em `lines`).
+   - `mode`: `bars` ou `lines`. Se o usuário indicou, use; senão escolha pela tabela acima sem travar (barras é o padrão).
+   - `topN`: quantas barras por quadro (padrão 12; ignorado em `lines`).
    - `unit`: sufixo dos valores (`%`, ` M`, etc.; vazio se não houver).
    - `decimals`: casas decimais do valor exibido (padrão 1).
-   - **Velocidade**: `stepMs` (ms por período, padrão 1400) ou `durationMs` (duração total da animação em ms); se `durationMs` vier, ele tem prioridade e o passo é calculado. Menor = mais rápido.
-3. **Montar a section.** Use o bloco "Template da section" abaixo: um `<section>` com o palco `.anim-stage`, o título/subtítulo do slide e o `<script>` com o **motor** + os **dados embutidos** + a **chamada**.
+   - **Velocidade**: `stepMs` (ms por período, padrão 1400) ou `durationMs` (duração total em ms); se `durationMs` vier, ele tem prioridade e o passo é calculado. Menor = mais rápido.
+3. **Montar a section.** Use o "Template da section" abaixo: `<section>` com o palco `.anim-stage`, título/subtítulo e o `<script>` com **motor** + **dados embutidos** + **chamada**.
 4. **Salvar.** Grave em `decks/<nome-do-deck>/index.html` (deck novo) ou **insira a section** no `index.html` existente, antes do bloco de controles de slide. O `<head>` do deck já traz D3, Tailwind e o tema; a section é autossuficiente.
-5. **Reportar.** Caminho do arquivo, o modo usado, e que o slide roda por `file://` (abre por duplo-clique), anima uma vez quando entra na tela e **para no quadro final**. Lembre que, para trocar os dados, basta editar o CSV embutido no `<script>`.
+5. **Reportar.** Caminho do arquivo, o modo usado, e que o slide roda por `file://`, anima uma vez ao entrar na tela e **para no quadro final**. Para trocar os dados, edite o CSV embutido no `<script>`.
 
 ## Template da section (copie e preencha)
 
-Substitua o título, o subtítulo, o `id` do palco, o CSV embutido e os parâmetros da chamada. Se já houver outro chart-race no mesmo deck, **mantenha o motor `miraChartRace` uma vez só** e repita apenas a `<section>` + a chamada com `id` e dados próprios.
+Substitua título, subtítulo, `id` do palco, CSV embutido e parâmetros da chamada. Se já houver outro chart-race no deck, **mantenha o motor `miraChartRace` uma vez só** e repita apenas a `<section>` + chamada com `id` e dados próprios.
 
 ```html
 <!-- ============ SLIDE: CHART RACE ============ -->
@@ -244,11 +241,11 @@ Substitua o título, o subtítulo, o `id` do palco, o CSV embutido e os parâmet
 
 ## Princípios de design
 
-1. **O período é o herói da narrativa.** O relógio (texto grande no canto) deixa claro "onde no tempo estamos". É o que prende o olhar.
-2. **A virada conta a história.** Ordene e prepare os dados para que a ultrapassagem importante aconteça (quem assume a liderança, quando uma série dispara). Em `bars` é o reordenamento; em `lines` é o cruzamento.
-3. **Cores estáveis por série.** Cada série mantém a mesma cor do início ao fim (a paleta é determinística pela ordem das colunas). Laranja da marca primeiro.
+1. **O período é o herói.** O relógio (texto grande no canto) mostra "onde no tempo estamos" e prende o olhar.
+2. **A virada conta a história.** Prepare os dados para que a ultrapassagem importante apareça (quem assume a liderança, quando uma série dispara). Em `bars` é o reordenamento; em `lines`, o cruzamento.
+3. **Cores estáveis por série.** Cada série mantém a mesma cor do início ao fim (paleta determinística pela ordem das colunas). Laranja da marca primeiro.
 4. **Leveza.** Eixos discretos, poucos ticks, números em formato humano (`d3.format('~s')`: 1.2k, não 1200). Sem grade pesada.
-5. **Ritmo legível.** `stepMs` entre ~1000 e ~2000 ms por período costuma ser confortável; séries muito longas pedem passo mais curto.
+5. **Ritmo legível.** `stepMs` entre ~1000 e ~2000 ms por período é confortável; séries muito longas pedem passo mais curto.
 
 ## Checklist
 

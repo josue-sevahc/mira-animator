@@ -1,34 +1,29 @@
 ---
 name: mira-validator
-description: Analisa e valida o HTML gerado pela skill /mira-builder, verificando conformidade visual, estrutural e de assets. Use esta skill SEMPRE que a /mira-builder terminar de gerar um index.html, ou quando o usuario quiser verificar a qualidade de uma apresentacao existente, revisar se os slides seguem o padrao, ou diagnosticar problemas visuais em slides ja criados.
+description: Valida o HTML gerado pela /mira-builder, checando conformidade visual, estrutural e de assets. Use SEMPRE que a /mira-builder terminar de gerar um index.html, ou quando o usuario quiser verificar a qualidade de uma apresentacao existente, revisar se os slides seguem o padrao, ou diagnosticar problemas visuais em slides ja criados.
 ---
 
 # Skill: Validador de Slides
 
 ## Objetivo
 
-Inspecionar o arquivo `index.html` gerado pela `/mira-builder` e produzir um relatorio de conformidade. O validador checa regras de estilo, presenca de assets, estrutura HTML e boas praticas definidas no padrao do projeto.
-
-## Quando esta skill e chamada
-
-1. **Automaticamente** pela `/mira-builder` apos gerar o HTML final
-2. **Manualmente** pelo usuario para validar uma apresentacao existente
+Inspecionar o `index.html` gerado pela `/mira-builder` e produzir um relatorio de conformidade: estilo, assets, estrutura HTML e boas praticas do padrao do projeto. Chamada automaticamente pela `/mira-builder` apos gerar o HTML, ou manualmente para validar uma apresentacao existente.
 
 ## Fluxo de Execucao
 
 ### Passo 1: Localizar o arquivo
 
 Identifique o `index.html` a validar:
-- Se chamado pela `/mira-builder`, o caminho ja e conhecido: `decks/<deck>/index.html`
-- Se chamado pelo usuario, pergunte qual capitulo ou aceite o caminho direto
+- Chamado pela `/mira-builder`: caminho conhecido `decks/<deck>/index.html`
+- Chamado pelo usuario: pergunte qual capitulo ou aceite o caminho direto
 
 ### Passo 2: Ler o HTML completo
 
-Leia o conteudo inteiro do `index.html` gerado.
+Leia o `index.html` inteiro.
 
 ### Passo 3: Executar as verificacoes
 
-Execute cada verificacao abaixo e registre o resultado como PASS ou FAIL com detalhes.
+Execute cada verificacao abaixo e registre PASS ou FAIL com detalhes.
 
 ---
 
@@ -118,7 +113,7 @@ Execute cada verificacao abaixo e registre o resultado como PASS ou FAIL com det
 
 ## Passo 4: Gerar o Relatorio
 
-Apresente o relatorio no seguinte formato:
+Apresente o relatorio neste formato:
 
 ```
 # Relatorio de Validacao: [Capitulo]
@@ -153,20 +148,20 @@ Para cada FAIL, indique:
 
 ### Niveis de severidade
 
-- **Critico** (categorias A, B, C): Problemas visuais graves ou assets faltantes. A apresentacao nao deve ser publicada sem corrigir.
+- **Critico** (categorias A, B, C): Problemas visuais graves ou assets faltantes. Nao publicar sem corrigir.
 - **Importante** (categorias D, E, F, H, I): Desvios do padrao que afetam qualidade mas nao impedem o uso.
-- **Qualidade** (categoria G): Sugestoes de composicao e variedade que melhoram a experiencia.
+- **Qualidade** (categoria G): Sugestoes de composicao e variedade.
 
 ## Passo 5: Oferecer correcao automatica
 
-Apos apresentar o relatorio, pergunte:
+Apos o relatorio, pergunte:
 
 > "Encontrei **X problemas**. Quer que eu corrija automaticamente os itens criticos e importantes?"
 
-Se o usuario aceitar, aplique as correcoes diretamente no `index.html` usando edicoes pontuais (Edit tool). Apos corrigir, rode a validacao novamente para confirmar que tudo passou.
+Se aceitar, aplique as correcoes no `index.html` com edicoes pontuais (Edit tool) e rode a validacao de novo para confirmar.
 
 ## Notas
 
-- Esta skill NAO modifica o conteudo textual dos slides, apenas corrige problemas tecnicos e de conformidade
-- Se um problema e ambiguo (ex: um card poderia ser lista ou grid), classifique como WARN em vez de FAIL
-- Placeholders residuais (G5) sao sempre FAIL critico porque indicam montagem incompleta
+- NAO modifica o conteudo textual dos slides, apenas problemas tecnicos e de conformidade
+- Problema ambiguo (ex: card poderia ser lista ou grid): classifique como WARN, nao FAIL
+- Placeholders residuais (G5) sao sempre FAIL critico: indicam montagem incompleta

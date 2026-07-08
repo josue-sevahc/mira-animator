@@ -1,15 +1,13 @@
 ---
 name: mira-animator
-description: Cria slides individuais com animações criativas e looping interno obrigatório, no padrão dos decks de referência em mira-templates/decks/. Combina o esqueleto visual da skill mira-builder (glass-card, icon-hero, attribute-pills, replay-btn) com a profundidade técnica das diretrizes D3 em references/ (D3.js v7+ ou 3D CSS) e a regra-mãe da skill, NENHUMA animação é estática, toda animação ENTRA com coreografia e DEPOIS continua em loop interno. Use SEMPRE que o usuário disser, "criar slide animado", "novo slide com animação", "adicionar card com D3", "/mira-animator", "slide criativo para o deck", "slide com flip cards", "slide com battle arena", "slide com staircase", ou pedir explicitamente "looping na animação", "animação contínua", "movimento contínuo no slide". Também use quando o usuário enviar uma imagem e pedir "transforme isso em um slide animado" ou "anima essa figura".
+description: Cria slides animados com looping interno obrigatório (D3.js v7+ ou 3D CSS), no padrão dos decks em mira-templates/decks/ e do esqueleto visual do mira-builder (glass-card, icon-hero, attribute-pills, replay-btn). Use SEMPRE que o usuário disser, "criar slide animado", "novo slide com animação", "adicionar card com D3", "/mira-animator", "slide criativo para o deck", "slide com flip cards", "slide com battle arena", "slide com staircase", ou pedir explicitamente "looping na animação", "animação contínua", "movimento contínuo no slide". Também use quando o usuário enviar uma imagem e pedir "transforme isso em um slide animado" ou "anima essa figura".
 ---
 
 # Skill: Slides com Animação Criativa e Looping Interno
 
-## REGRA ZERO, OBRIGATÓRIA, INEGOCIÁVEL
+## REGRA ZERO, Loop Interno Obrigatório
 
-**Toda animação criada por esta skill DEVE ter um loop interno contínuo.**
-
-Uma animação que só entra com fade-up e para é proibida. O slide tem que continuar respirando depois da entrada, com alguma coisa em movimento perpétuo. Exemplos válidos de loop interno:
+**Toda animação criada por esta skill DEVE ter um loop interno contínuo.** Uma animação que só entra com fade-up e para é proibida: o slide continua respirando depois da entrada, com algo em movimento perpétuo. Exemplos válidos:
 
 - Partícula viajando por uma linha de A para B repetidamente
 - Pulso radial em um elemento central (raio expande e contrai)
@@ -19,11 +17,11 @@ Uma animação que só entra com fade-up e para é proibida. O slide tem que con
 - Climber/orbe percorrendo um caminho e reiniciando
 - Música/agente piscando em uníssono aleatório
 
-Se você não conseguir descrever o loop em uma frase ("uma esfera laranja sobe a escada e volta ao começo"), a animação está incompleta.
+Se você não consegue descrever o loop em uma frase ("uma esfera laranja sobe a escada e volta ao começo"), a animação está incompleta.
 
 ## REGRA DE LIBERDADE CRIATIVA
 
-Não use sempre o mesmo formato. **Varie a metáfora visual** conforme o conceito do slide:
+**Varie a metáfora visual** conforme o conceito do slide; não use sempre o mesmo formato:
 
 - Conceito hierárquico, hub-and-spoke (SPEC no centro, satélites ao redor)
 - Conceito evolutivo, staircase com climber
@@ -33,30 +31,30 @@ Não use sempre o mesmo formato. **Varie a metáfora visual** conforme o conceit
 - Conceito de fluxo, partículas viajando entre nós
 - Conceito com objeto concreto, o ícone real do objeto como ator (não um círculo que o representa)
 
-Não caia em "8 cards retangulares enfileirados". O usuário já reclamou disso antes. Cada slide é uma micro-narrativa visual.
+Não caia em "8 cards retangulares enfileirados" (o usuário já reclamou). Cada slide é uma micro-narrativa visual.
 
 ## REGRA DE VOCABULÁRIO VISUAL, ÍCONE REAL EM VEZ DE CÍRCULO
 
-O círculo (dot, partícula, satélite, anel, pulso radial) virou muleta. Ele é legítimo só para conceitos **genuinamente abstratos**: fluxo, energia, sinal, conexão, pulso, propagação. Para o resto, ele empobrece a cena.
+O círculo (dot, partícula, satélite, anel, pulso radial) virou muleta. Ele é legítimo só para conceitos **genuinamente abstratos**: fluxo, energia, sinal, conexão, pulso, propagação. Para o resto, empobrece a cena.
 
-**Quando o conceito tem um referente concreto, o ator da animação é um ícone reconhecível, não um círculo.** Se dá para nomear o objeto (livro, cérebro, engrenagem, foguete, banco de dados, chave, escudo, moeda, nuvem, robô, funil, alvo, bússola), anime o objeto, não uma bolinha que o representa.
+**Quando o conceito tem referente concreto, o ator da animação é um ícone reconhecível, não um círculo.** Se dá para nomear o objeto (livro, cérebro, engrenagem, foguete, banco de dados, chave, escudo, moeda, nuvem, robô, funil, alvo, bússola), anime o objeto.
 
-**Estilo flat, não outline.** "Flat" aqui é o estilo, não um site: silhueta cheia (preenchida), cantos suaves, formas sólidas, pouco detalhe, leitura instantânea à distância e na projeção. É o oposto do traço fino vazado do Lucide, que continua só na moldura do card (header, pílulas). Um ícone flat lê como objeto; um outline fininho some no palco.
+**Estilo flat, não outline.** "Flat" aqui é o estilo: silhueta cheia (preenchida), cantos suaves, formas sólidas, pouco detalhe, leitura instantânea à distância e na projeção. É o oposto do traço fino vazado do Lucide, que continua só na moldura do card (header, pílulas). Um ícone flat lê como objeto; um outline fininho some no palco.
 
 Como fazer, sem quebrar nada:
 
 1. **Traga o ícone como `<path>` inline** no mesmo `<svg>` da animação. A regra "dentro do SVG, desenhe com path/rect/line" continua valendo; o path agora vem de um ícone real em vez de um círculo desenhado à mão.
-2. **O ícone é o ator do loop interno** (Regra Zero intacta): ele orbita, viaja pela linha, pulsa, se desenha via `stroke-dashoffset`, entra em cascata. Ícone parado no centro é proibido igual a qualquer animação estática.
+2. **O ícone é o ator do loop interno** (Regra Zero intacta): orbita, viaja pela linha, pulsa, se desenha via `stroke-dashoffset`, entra em cascata. Ícone parado no centro é proibido igual a qualquer animação estática.
 3. **Cor segue a paleta do deck, o preenchimento flat permanece.** No deck card laranja/preto, recolore o ícone para laranja e neutros mantendo-o cheio; no template de animação pura (multicor), a cor cheia do ícone é bem-vinda. Nunca introduza cor fora do tema num deck card. O tamanho segue a composição.
 
 Fonte e licença, mesmo rigor do `mira-icon-morph`:
 
-- Puxe ícones planos de **fontes abertas**, só licenças **MIT, Apache-2.0, CC0 ou CC-BY**. Duas fontes de primeira linha: **Google Material Symbols/Icons** (fonts.google.com/icons, Apache-2.0, com eixo *fill* para a versão preenchida, que é a cara do flat) e a **API do Iconify** (agrega Material, MDI e centenas de sets flat). Prefira ícone de path único, viewBox `0 0 24 24` (anima limpo).
+- Puxe ícones planos de **fontes abertas**, só licenças **MIT, Apache-2.0, CC0 ou CC-BY**. Duas de primeira linha: **Google Material Symbols/Icons** (fonts.google.com/icons, Apache-2.0, com eixo *fill* para a versão preenchida, que é a cara do flat) e a **API do Iconify** (agrega Material, MDI e centenas de sets flat). Prefira ícone de path único, viewBox `0 0 24 24` (anima limpo).
 - **Embuta inline**; o deck continua offline, por `file://`. A internet é usada só na geração.
 - Se a licença pedir, **registre a atribuição no `CREDITS.md`** do deck. Recuse IP protegida (personagem de franquia) e sugira arte original.
 - Slide inteiro feito de morph de ícones já é o `/mira-icon-morph`; aqui o ícone entra como mais um elemento da cena.
 
-Círculo continua ótimo para o abstrato. A regra é simples: **não desenhe uma bolinha quando existe um objeto óbvio para desenhar.**
+Círculo continua ótimo para o abstrato. A regra: **não desenhe uma bolinha quando existe um objeto óbvio para desenhar.**
 
 ## REGRA DE IDIOMA
 
@@ -154,7 +152,7 @@ Quando o deck usa este template, ele NÃO é feito de cards. As regras de card d
 </div>
 ```
 
-**CSS específico do stage.** O tamanho padrão do canvas já vem do `.anim-stage` (no `base.css`): `height: clamp(400px, 60vh, 620px)`. Só adicione um override por slide no `<style>` se aquele slide específico precisar de mais ou menos altura:
+**CSS específico do stage.** O tamanho padrão do canvas já vem do `.anim-stage` (no `base.css`): `height: clamp(400px, 60vh, 620px)`. Só adicione um override por slide no `<style>` se aquele slide precisar de mais ou menos altura:
 
 ```css
 #SLUG-stage {
@@ -170,14 +168,14 @@ Quando o deck usa este template, ele NÃO é feito de cards. As regras de card d
 
 ## Marcador de Tamanho (@MIRA:SIZE)
 
-Toda animação nasce no nível de tamanho **3/10**. Por isso, na linha imediatamente acima do `.anim-stage`, estampe sempre o marcador:
+Toda animação nasce no nível de tamanho **3/10**. Na linha imediatamente acima do `.anim-stage`, estampe sempre o marcador:
 
 ```html
 <!-- @MIRA:SIZE 3/10 -->
 <div class="anim-stage" id="SLUG-stage"> ... </div>
 ```
 
-Esse comentário é a memória do tamanho da animação. A skill `mira-size-animator` lê esse marcador para reportar e ajustar a percepção de tamanho (escalar a composição para cima ou para baixo) sem precisar adivinhar o nível atual. Gere uma animação por vez já com o marcador 3/10; não invente outro valor.
+Esse comentário é a memória do tamanho da animação: a skill `mira-size-animator` o lê para reportar e ajustar a percepção de tamanho (escalar a composição para cima ou para baixo) sem adivinhar o nível atual. Gere uma animação por vez já com o marcador 3/10; não invente outro valor.
 
 ## Trigger System Obrigatório
 
@@ -213,7 +211,7 @@ function animateSlug() {
 }
 ```
 
-Se isso não estiver presente, dois climbers correm ao mesmo tempo no Replay, vaza memória, animações ficam fora de sincronia.
+Sem isso, dois climbers correm ao mesmo tempo no Replay, vaza memória, animações ficam fora de sincronia.
 
 ## Tipos de Animação Suportados
 
@@ -331,7 +329,7 @@ Loop interno: partícula viajando de A para B em cada linha (com `animation-dela
 
 ## Referência de Padrões
 
-Os blueprints de card já prontos vivem em `mira-templates/slides/` (capa, comparação, métricas, fluxo, escada, orbital, encerramento), cada um com seu loop interno. Os esqueletos de deck completos vivem em `mira-templates/decks/`. Quando criar um novo slide, abra o blueprint mais próximo do que você quer fazer e use como base estrutural, variando a metáfora visual conforme o conceito.
+Os blueprints de card já prontos vivem em `mira-templates/slides/` (capa, comparação, métricas, fluxo, escada, orbital, encerramento), cada um com seu loop interno. Os esqueletos de deck completos vivem em `mira-templates/decks/`. Ao criar um novo slide, abra o blueprint mais próximo do que você quer fazer e use como base estrutural, variando a metáfora visual conforme o conceito.
 
 ## Sistema de Passagem de Slides (obrigatório)
 

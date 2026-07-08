@@ -1,20 +1,16 @@
 ---
 name: mira-svg-morph
 description: >-
-  Gera num slide do Mira (novo ou existente) uma forma SVG que MORFA em outra(s)
+  Gera num slide do Mira (novo ou existente) uma forma SVG que morfa em outra(s)
   em loop contínuo, com GSAP e MorphSVGPlugin vendorados localmente (deck
-  offline, file://). O usuário aponta 2 ou mais arquivos .svg da pasta assets/
-  do deck, na ordem do morph: 2 SVGs fazem ida e volta, N SVGs encadeiam (A vira
-  B vira C ... vira A). A skill cola os paths inline com ids únicos, roda
-  MorphSVGPlugin.convertToPath em formas que não são path (circle, rect,
-  polygon) e monta a timeline em loop. Card limpo: título sem ícone, forma
-  morfando grande e central, laranja FF904D. Herda a Regra Zero e respeita
-  prefers-reduced-motion. MorphSVG morfa path em path: multi-path morfa par a
-  par, só a silhueta, melhor quando os SVGs têm o mesmo viewBox. Use SEMPRE que
-  o usuário disser /mira-svg-morph, morfa esse svg no outro, uma forma virando
-  outra, morphing de svg, transição de forma, faz um ícone virar outro, ou der
-  dois ou mais SVGs pedindo um virar o outro. Quando o usuário só descreve em
-  palavras, use mira-icon-morph.
+  offline, file://). O usuário aponta 2 ou mais arquivos .svg da pasta assets/ na
+  ordem do morph; a skill inline os paths com ids únicos, converte formas
+  não-path e monta a timeline em loop. Card limpo, laranja FF904D, herda a Regra
+  Zero e respeita prefers-reduced-motion. Use SEMPRE que o usuário disser
+  /mira-svg-morph, morfa esse svg no outro, uma forma virando outra, morphing de
+  svg, transição de forma, faz um ícone virar outro, ou der dois ou mais SVGs
+  pedindo um virar o outro. Quando o usuário só descreve em palavras, use
+  mira-icon-morph.
 ---
 
 # Skill: SVG que morfa em outro, em loop
@@ -23,9 +19,9 @@ Gera um slide onde uma silhueta vetorial vira outra diante do espectador, em loo
 
 > **Fonte da verdade:** padrão validado em `decks/apresentacao-mira-gsap/` na sessão de 2026-06-19. `morph-demo.html` (dois SVGs, ida e volta), `morph-sequencia.html` (vários SVGs encadeados) e o GSAP já vendorado em `assets/gsap/`. A spec completa está em `specs/GSAP/mira-svg-morph-spec.md`. Quando em dúvida sobre o scaffold, copie desses arquivos.
 
-## Como o morph funciona (o ponto crítico, leia)
+## Como o morph funciona
 
-O **MorphSVGPlugin** transforma o atributo `d` de um `<path>` no `d` de outro. Implicações que definem o que dá pra fazer:
+O **MorphSVGPlugin** transforma o atributo `d` de um `<path>` no `d` de outro. Implicações:
 
 - **Morfa `<path>` em `<path>`, não "SVG inteiro" em "SVG inteiro".** Cada SVG limpo de **path único** morfa liso. SVG com vários paths morfa **par a par** (path 1 vira path 1, path 2 vira path 2).
 - **Multi-path com contagens diferentes:** pareie na ordem até o menor número de paths; os paths que sobram entram e saem por fade. Avise a assimetria ao usuário.
@@ -34,9 +30,9 @@ O **MorphSVGPlugin** transforma o atributo `d` de um `<path>` no `d` de outro. I
 - **Mesmo viewBox nos dois.** Se forem diferentes, normalize para um viewBox comum (escala/translada), senão o morph "salta".
 - **Formas de complexidade muito diferente** podem morfar "líquido". É aceitável; o MorphSVG já faz um mapeamento padrão.
 
-## Vendorar o GSAP (offline é inegociável)
+## Vendorar o GSAP (offline)
 
-O deck do Mira abre por `file://`, então **nada de CDN em runtime**. Baixe os dois arquivos para `assets/gsap/` do deck (uma vez por deck; se já existirem, pule):
+O deck do Mira abre por `file://`, então nada de CDN em runtime. Baixe os dois arquivos para `assets/gsap/` do deck (uma vez por deck; se já existirem, pule):
 
 ```
 curl -s https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js          -o assets/gsap/gsap.min.js
@@ -52,7 +48,7 @@ GSAP e MorphSVG são gratuitos e redistribuíveis desde abril de 2025 (inclusive
 
 ## Inline + ids únicos + convertToPath (em tempo de geração)
 
-No `file://` o `fetch` de SVG costuma ser bloqueado, então o inline é feito **agora, pela skill**, não no navegador:
+No `file://` o `fetch` de SVG costuma ser bloqueado, então o inline é feito agora, pela skill, não no navegador:
 
 1. **Ler cada `.svg`** apontado pelo usuário e extrair o `d` de cada `<path>`.
 2. **Renomear ids** de paths, gradientes, filtros e clipPaths para valores únicos por arquivo (prefixo por índice, ex.: `m0-`, `m1-`), para não colidir entre vários SVGs no mesmo documento.
@@ -63,7 +59,7 @@ No `file://` o `fetch` de SVG costuma ser bloqueado, então o inline é feito **
 
 Todo slide do Mira tem loop interno: a timeline do morph usa `repeat: -1` e nunca para. Descreva o loop em uma frase ("a nuvem vira lâmpada, vira olho, vira coração e volta, sem parar").
 
-Respeite `prefers-reduced-motion`: quando ativo, **não** rode o loop; mostre a forma final estática.
+Respeite `prefers-reduced-motion`: quando ativo, não rode o loop; mostre a forma final estática.
 
 ## Composição do card (padrão do mira-animator: limpo, forma maximizada)
 
@@ -73,7 +69,7 @@ Respeite `prefers-reduced-motion`: quando ativo, **não** rode o loop; mostre a 
 
 ## Scaffold canônico (gerar conforme os arquivos de teste)
 
-A forma morfante é um `<path>` dentro de um grupo que escala o sistema 0 0 24 24 (caso dos ícones) para o palco. Atenção ao glow: como o path vive no espaço 24x24 e é escalado, o `stdDeviation` do filtro fica pequeno (~0.7), senão o blur explode.
+A forma morfante é um `<path>` dentro de um grupo que escala o sistema 0 0 24 24 (caso dos ícones) para o palco. Como o path vive no espaço 24x24 e é escalado, o `stdDeviation` do glow fica pequeno (~0.7), senão o blur explode.
 
 ```html
 <!-- @MIRA:SIZE 3/10 -->
@@ -118,11 +114,11 @@ Registre `animateSlug` no `setupAnimationTriggers()` do deck (mesmo padrão do m
 
 ## Passos
 
-1. **Receber destino + arquivos.** Slide novo ou slide N do deck X, e os 2+ `.svg` na ordem do morph. Se vier 1 só, avise que o morph precisa de 2 ou mais (veja Checklist). Se faltar arquivo, pergunte.
+1. **Receber destino + arquivos.** Slide novo ou slide N do deck X, e os 2+ `.svg` na ordem do morph. Com 1 só, avise que o morph precisa de 2 ou mais. Se faltar arquivo, pergunte.
 2. **Vendorar o GSAP** em `assets/gsap/` (pule se já houver).
 3. **Inline + ids únicos + convertToPath:** ler cada SVG, extrair os `d`, renomear ids, converter formas não-path. Se as contagens de path diferirem, pareie até o menor e avise; se os viewBox diferirem, normalize e avise.
 4. **Montar o card limpo:** título sem ícone (máx. 6 palavras), forma grande e central em #FF904D, marcador `@MIRA:SIZE 3/10`. Inserir como `<section>` no padrão do deck; preservar a navegação.
-5. **Implementar a timeline** com o scaffold: loop `repeat: -1`, 2 = ida e volta, N = encadeia; `prefers-reduced-motion` mostra a forma final estática; registrar no trigger do deck.
+5. **Implementar a timeline** com o scaffold: `repeat: -1`, 2 = ida e volta, N = encadeia; `prefers-reduced-motion` mostra a forma final estática; registrar no trigger do deck.
 6. **Reportar.** Caminho do arquivo, a sequência do morph e o loop em uma frase, os arquivos usados, e que abre por `file://` sem servidor.
 
 ## Checklist

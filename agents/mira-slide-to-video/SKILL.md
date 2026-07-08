@@ -1,45 +1,38 @@
 ---
 name: mira-slide-to-video
 description: >-
-  Gera um arquivo de video .mp4 a partir de um ou mais slides de um deck do Mira,
-  gravando a animacao real do slide (Chrome headless + captura em tempo real,
-  juncao com ffmpeg). O video expressa exatamente o slide: a animacao dispara do
-  zero, sem vazar o slide anterior, enquadrada e preenchendo o frame. Recebe qual
-  slide ou slides entram no video (um, varios ou todos) e a resolucao (16:9, 9:16,
-  1:1), e monta um unico mp4; quando ha mais de um slide, encadeia com transicao,
-  4 segundos por padrao, alteravel pelo usuario. Slides com animacao finita, como
-  o chart-race, tocam por inteiro. Nunca toca no deck original. Use SEMPRE que o
-  usuario disser /mira-slide-to-video, gerar video do slide, transformar slide em
-  video, exportar slide como mp4, gravar a animacao do slide, video do deck, quero
-  um mp4 do slide, renderizar o slide em video, ou fazer um Reels/Short a partir
-  do slide.
+  Gera um .mp4 de um ou mais slides de um deck do Mira gravando a animacao real
+  (Chrome headless + ffmpeg): cada slide dispara do zero, sem vazar o anterior,
+  preenchendo o frame. Recebe quais slides (um, varios ou todos) e a resolucao
+  (16:9, 9:16, 1:1), encadeia com transicao (4 segundos por slide, alteravel),
+  toca animacoes finitas como o chart-race por inteiro e nunca toca no deck
+  original. Use SEMPRE que o usuario disser /mira-slide-to-video, gerar
+  video do slide, transformar slide em video, exportar slide como mp4, gravar a
+  animacao do slide, video do deck, quero um mp4 do slide, renderizar o slide em
+  video, ou fazer um Reels/Short a partir do slide.
 ---
 
 # Skill: Slide (ou slides) do Mira em video .mp4
 
 Grava a animacao real de um ou mais slides de um deck e entrega um unico `.mp4`. Casos tipicos: exportar um slide para Reels/Shorts, gerar um teaser do deck, mandar um trecho animado por WhatsApp.
 
-## O que ela faz, em uma frase
-
-Abre o deck no Chrome headless, grava cada slide pedido em tempo real (a animacao comeca do zero, sem vazar o slide anterior, preenchendo o frame), e junta os clipes num video, com uma transicao entre eles.
+Abre o deck no Chrome headless, grava cada slide pedido em tempo real (animacao do zero, sem vazar o slide anterior, preenchendo o frame) e junta os clipes num video com transicao entre eles.
 
 ## Regra de Ouro: nunca toca no deck original
 
 Grava a partir do `index.html` (ou de um `index-9x16.html` etc.) sem editar nada. A saida `.mp4` vai para a pasta do deck (ou o caminho que o usuario pedir).
 
-## Modelo de tempo (o "4 segundos", leia)
-
-O pedido "tempo de um slide para outro = 4s por padrao" e mapeado assim:
+## Modelo de tempo (o "4 segundos")
 
 - **`--seconds N` (padrao 4):** quanto tempo CADA slide fica no video. Esse e o 4s padrao, alteravel.
-- **`--durations 2:17,5:8`:** override por slide. **Slides com animacao finita (chart-race, que toca uma vez e para) devem receber aqui a duracao total da animacao**, senao o video corta no meio e nao "expressa exatamente o slide". Para chart-race, leia o `durationMs` (linhas) ou `stepMs x (nperiodos-1)` (barras) no JS do slide e use esse valor (some ~1s de folga para segurar o quadro final).
-- **`--transition D` (padrao 0.6):** crossfade entre um slide e o proximo. Se o usuario quiser mesmo uma transicao longa de 4s, use `--transition 4`.
+- **`--durations 2:17,5:8`:** override por slide. **Slides com animacao finita (chart-race, que toca uma vez e para) devem receber aqui a duracao total da animacao**, senao o video corta no meio. Para chart-race, leia o `durationMs` (linhas) ou `stepMs x (nperiodos-1)` (barras) no JS do slide e use esse valor (some ~1s de folga para segurar o quadro final).
+- **`--transition D` (padrao 0.6):** crossfade entre um slide e o proximo. Para uma transicao longa de 4s, use `--transition 4`.
 
 Regra pratica: slide de **loop continuo** = 4s (ou o valor pedido); slide de **animacao finita** = duracao total da animacao (via `--durations`).
 
 ## Dependencias (instalar sob demanda, padrao Mira)
 
-Precisa de **ffmpeg** no PATH (ou em `MIRA_FFMPEG`) e dos pacotes **puppeteer** + **puppeteer-screen-recorder**. Não são dependencia do Mira: instale numa pasta temporaria reaproveitavel (como o `mira-qrcode` faz com o `qrcode`), e rode os scripts com `NODE_PATH` apontando para o `node_modules` dela.
+Precisa de **ffmpeg** no PATH (ou em `MIRA_FFMPEG`) e dos pacotes **puppeteer** + **puppeteer-screen-recorder**. Nao sao dependencia do Mira: instale numa pasta temporaria reaproveitavel (como o `mira-qrcode` faz com o `qrcode`) e rode os scripts com `NODE_PATH` apontando para o `node_modules` dela.
 
 1. **Conferir ffmpeg:** `ffmpeg -version`. Se nao houver, avise o usuario (Windows: baixar em gyan.dev e por no PATH, ou setar `MIRA_FFMPEG`). Sem ffmpeg a skill nao roda.
 2. **Instalar os pacotes uma vez** (pule se `node_modules/puppeteer-screen-recorder` ja existir na pasta temp):
@@ -55,9 +48,9 @@ Precisa de **ffmpeg** no PATH (ou em `MIRA_FFMPEG`) e dos pacotes **puppeteer** 
 
 ## Enquadramento e preenchimento
 
-- **16:9 (padrao):** `--width 1920 --height 1080`. O script mede a caixa do conteudo do slide e da um `scale` (`--fill`, padrao 0.92) para o slide preencher o frame sem distorcer. Sobra faixa lateral quando o conteudo e mais estreito que 16:9 (inerente, mantem a proporcao).
+- **16:9 (padrao):** `--width 1920 --height 1080`. O script mede a caixa do conteudo do slide e da um `scale` (`--fill`, padrao 0.92) para preencher o frame sem distorcer. Sobra faixa lateral quando o conteudo e mais estreito que 16:9 (inerente, mantem a proporcao).
 - **9:16 / 1:1:** para um vertical/quadrado que preenche de verdade, grave a partir do **deck ja adaptado ao formato** (`index-9x16.html` do `mira-vertical`, `index-1x1.html` do `mira-squared`) com `--width 1080 --height 1920` (ou `1080 1080`) e `--fill 0` (o deck ja preenche). Gravar o 16:9 direto num quadro 9:16 deixa o conteudo como uma faixa fina no meio.
-- **Deck de cena unica (sem `body > section`):** decks que sao UMA cena full-screen (ex.: a cena de digitacao do `mira-animated-typing`, com `.mira-frame` no lugar de `<section>`) nao tem slides. A skill detecta isso (0 secoes), grava a **pagina inteira** como um unico clipe e, para um t=0 limpo, limpa a tela e carrega o deck do zero ja gravando. Passe `--seconds` cobrindo a duracao total da cena (decks que rodam uma vez e param). Para **1:1 sem cinza**, grave o `index-1x1.html` com `--width 1080 --height 1080`: o quadro do deck (lado `100vh`) preenche o frame quadrado e as laterais cinza nem aparecem (nada a recortar). O `--slides` e ignorado nesse caso.
+- **Deck de cena unica (sem `body > section`):** decks que sao UMA cena full-screen (ex.: a cena de digitacao do `mira-animated-typing`, com `.mira-frame` no lugar de `<section>`) nao tem slides. A skill detecta isso (0 secoes), grava a **pagina inteira** como um unico clipe e, para um t=0 limpo, limpa a tela e carrega o deck do zero ja gravando. Passe `--seconds` cobrindo a duracao total da cena. Para **1:1 sem cinza**, grave o `index-1x1.html` com `--width 1080 --height 1080`: o quadro do deck (lado `100vh`) preenche o frame quadrado e as laterais cinza nem aparecem. O `--slides` e ignorado nesse caso.
 
 ## Passos
 

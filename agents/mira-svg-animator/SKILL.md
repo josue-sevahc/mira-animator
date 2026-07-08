@@ -1,44 +1,41 @@
 ---
 name: mira-svg-animator
 description: >-
-  Anima num slide do Mira um SVG que o usuário FORNECE, dando movimento próprio
-  à forma (não troca uma forma por outra, isso é morph). O usuário passa 1
-  arquivo .svg e descreve o movimento em palavras: bater asas, girar uma roda,
-  deslizar, pulsar, desenhar o contorno, percorrer uma curva. Usa GSAP vendorado
-  localmente (offline, file://) e escolhe a técnica: transform, DrawSVGPlugin (o
-  traço se desenha) ou MotionPathPlugin (curva). Ponto central: para animar uma
-  PARTE ela precisa ser um elemento separado; se o SVG vier como path único
-  fundido, a skill separa a parte por clipPath ou editando o path. Também remove
-  fundo opaco e define a origem do movimento. Herda a Regra Zero e respeita
-  prefers-reduced-motion. Use SEMPRE que o usuário disser /mira-svg-animator,
-  anima esse svg, faz a borboleta bater asas, gira essa roda, faz esse desenho
-  se mexer, desliza esse svg, faz pulsar, o traço se desenha sozinho, ou passar
-  um SVG pedindo movimento. Para uma forma virando OUTRA use mira-svg-morph ou
-  mira-icon-morph.
+  Anima um SVG que o usuário FORNECE dentro de um slide do Mira, dando movimento
+  próprio à forma (não vira outra forma, isso é morph). Usa GSAP vendorado
+  offline (file://) e escolhe a técnica por transform, DrawSVGPlugin (o traço se
+  desenha) ou MotionPathPlugin (curva). Para animar uma PARTE, ela precisa ser um
+  elemento separado; se o SVG vier como path único fundido, a skill separa por
+  clipPath ou editando o path. Remove fundo opaco, define a origem do movimento,
+  herda a Regra Zero e respeita prefers-reduced-motion. Use SEMPRE que o usuário
+  disser /mira-svg-animator, anima esse svg, faz a borboleta bater asas, gira
+  essa roda, faz esse desenho se mexer, desliza esse svg, faz pulsar, o traço se
+  desenha sozinho, ou passar um SVG pedindo movimento. Para uma forma virando
+  OUTRA use mira-svg-morph ou mira-icon-morph.
 ---
 
 # Skill: animar um SVG que o usuário fornece
 
-Dá vida a um SVG que o usuário já tem: a borboleta bate asas, a roda gira, o contorno se desenha, o objeto desliza. A forma não vira outra (isso é morph), ela ganha movimento próprio.
+Dá vida a um SVG que o usuário já tem: a borboleta bate asas, a roda gira, o contorno se desenha, o objeto desliza. A forma ganha movimento próprio, não vira outra (isso é morph).
 
-> **Fonte da verdade:** padrão validado em `decks/apresentacao-mira-gsap/borboleta-bate-asas.html` (sessão de 2026-06-19): asas batendo via `scaleX` em torno do eixo do corpo, fundo branco removido, antenas mantidas estáticas. A spec completa está em `specs/GSAP/mira-svg-animator-spec.md`. Quando em dúvida, copie desse exemplo.
+> **Fonte da verdade:** padrão validado em `decks/apresentacao-mira-gsap/borboleta-bate-asas.html` (sessão de 2026-06-19): asas batendo via `scaleX` em torno do eixo do corpo, fundo branco removido, antenas mantidas estáticas. Spec completa em `specs/GSAP/mira-svg-animator-spec.md`. Em dúvida, copie desse exemplo.
 
-## O ponto crítico: animar uma PARTE exige que a parte seja separada (leia)
+## Animar uma PARTE exige que a parte seja separada
 
-GSAP só move o elemento que você entrega. Para mover **uma parte** (uma asa, uma roda, um braço), essa parte tem que ser um **elemento separado** no SVG (um `<g>`/`<path>` próprio). A maioria dos SVGs vem como **um path único fundido**, e aí o GSAP só consegue mover o desenho inteiro. Antes de animar uma parte, separe-a:
+GSAP só move o elemento que você entrega. Para mover **uma parte** (uma asa, uma roda, um braço), ela tem que ser um **elemento separado** no SVG (um `<g>`/`<path>` próprio). A maioria dos SVGs vem como **path único fundido**, e aí o GSAP só move o desenho inteiro. Antes de animar uma parte, separe-a:
 
-- **Corte por eixo com clipPath (recomendado para simetria).** Renderize a silhueta duas (ou mais) vezes, cada cópia recortada por um `clipPath` numa região (ex.: metade esquerda / metade direita no eixo do corpo). Cada cópia vira um grupo animável. Foi assim que a borboleta ganhou asa esquerda e direita.
-- **Edite o path para isolar ou remover um trecho.** Se uma parte do path não deve se mover (ex.: as antenas dentro do path da asa), localize o trecho contínuo e substitua por uma reta curta que fecha a forma sem ele (ex.: trocar o desenho das antenas por `L x y` atravessando o topo do corpo). Assim o corte por eixo não duplica nem mexe nessa parte.
+- **Corte por eixo com clipPath (recomendado para simetria).** Renderize a silhueta duas (ou mais) vezes, cada cópia recortada por um `clipPath` numa região (ex.: metade esquerda / direita no eixo do corpo). Cada cópia vira um grupo animável — foi assim que a borboleta ganhou asa esquerda e direita.
+- **Edite o path para isolar ou remover um trecho.** Se uma parte do path não deve se mover (ex.: antenas dentro do path da asa), localize o trecho contínuo e substitua por uma reta curta que fecha a forma sem ele (ex.: trocar as antenas por `L x y` atravessando o topo do corpo). Assim o corte por eixo não duplica nem mexe nessa parte.
 
-Se a parte não isolar de jeito limpo, **avise** e ofereça animar o SVG inteiro (rotação/pulso global) em vez de uma parte.
+Se a parte não isolar de jeito limpo, **avise** e ofereça animar o SVG inteiro (rotação/pulso global).
 
 ## Remova o fundo
 
-Se o SVG tiver fundo opaco (ex.: `<rect fill="#ffffff">` cobrindo tudo, ou um fundo de cor), **remova/oculte** esse elemento antes de animar, senão ele tampa o card escuro do Mira. Se o fundo for ambíguo (gradiente, imagem), pergunte qual elemento é o fundo.
+Se o SVG tiver fundo opaco (ex.: `<rect fill="#ffffff">` cobrindo tudo, ou fundo de cor), **remova/oculte** esse elemento antes de animar, senão ele tampa o card escuro do Mira. Se for ambíguo (gradiente, imagem), pergunte qual elemento é o fundo.
 
 ## A origem do movimento (svgOrigin)
 
-Rotação e escala precisam girar em torno do ponto certo, não do canto do SVG. Defina a origem em coordenadas do SVG com `svgOrigin: 'X Y'` (ex.: o eixo da dobradiça das asas no corpo, ou o centro de uma roda). Se a dobradiça não for óbvia, use o centro geométrico da parte e diga qual ponto usou.
+Rotação e escala giram em torno do ponto certo, não do canto do SVG. Defina a origem em coordenadas do SVG com `svgOrigin: 'X Y'` (ex.: o eixo da dobradiça das asas, ou o centro de uma roda). Se a dobradiça não for óbvia, use o centro geométrico da parte e diga qual ponto usou.
 
 ## Vendorar o GSAP (offline é inegociável)
 
@@ -64,7 +61,7 @@ Movimento perpétuo em loop (`repeat: -1`). Descreva o loop em uma frase ("as as
 
 ## Composição do card (padrão do mira-animator: limpo, SVG maximizado)
 
-Título no topo, sem ícone, no máximo 6 palavras. O SVG ocupa boa parte da altura útil. Identidade laranja #FF904D quando fizer sentido recolorir (não altere a arte sem pedido). Insira como `<section>` no padrão do deck e preserve a navegação. Estampe `@MIRA:SIZE 3/10` acima do palco.
+Título no topo, sem ícone, no máximo 6 palavras. O SVG ocupa boa parte da altura útil. Identidade laranja #FF904D quando fizer sentido recolorir (não altere a arte sem pedido). Insira como `<section>` no padrão do deck, preserve a navegação e estampe `@MIRA:SIZE 3/10` acima do palco.
 
 ## Scaffold canônico (bater asas, validado na borboleta)
 
@@ -103,12 +100,12 @@ gsap.fromTo('#SLUG-traco', { drawSVG: '0%' }, { drawSVG: '100%', duration: 2.2, 
 
 ## Passos
 
-1. **Receber destino + SVG + movimento.** Slide novo ou slide N do deck X, o `.svg` e a descrição do movimento. Se faltar arquivo ou a descrição, pergunte.
+1. **Receber destino + SVG + movimento.** Slide novo ou slide N do deck X, o `.svg` e a descrição do movimento. Se faltar arquivo ou descrição, pergunte.
 2. **Copiar o SVG para `assets/`**, **remover o fundo** opaco e **inspecionar a estrutura** (partes separadas ou path único).
 3. **Separar a parte a animar** se for path único (corte por eixo com clipPath ou edição do path para isolar/remover trechos fixos). Definir a **origem** do movimento.
 4. **Escolher a técnica** (transform / DrawSVG / MotionPath) e **vendorar** só os arquivos GSAP necessários em `assets/gsap/`.
-5. **Montar o card** no padrão do deck (título sem ícone máx. 6 palavras, marcador @MIRA:SIZE), implementar a timeline em loop com `prefers-reduced-motion`, e registrar no trigger do deck.
-6. **Reportar.** Caminho do arquivo, o movimento em uma frase, a técnica e a origem usadas, se separou parte e como, e que abre por `file://`.
+5. **Montar o card** no padrão do deck (título sem ícone máx. 6 palavras, marcador @MIRA:SIZE), implementar a timeline em loop com `prefers-reduced-motion` e registrar no trigger do deck.
+6. **Reportar.** Caminho do arquivo, o movimento em uma frase, técnica e origem usadas, se separou parte e como, e que abre por `file://`.
 
 ## Checklist
 

@@ -2,13 +2,11 @@
 name: mira-tactics
 description: >-
   Cria um slide de MESA TÁTICA no Mira: campo de futebol cinematográfico com os
-  dois times posicionados na formação real, cada jogador como um boneco chibi
-  animado (ou disco clássico) na cor do time, com o número flutuando acima da
-  cabeça; clicar revela o nome. O apresentador manipula tudo ao vivo: move,
-  adiciona, apaga, desenha setas, zonas e traços (paint), grava e reproduz
-  jogadas por quadros-chave (tecla R) e salva cada jogada como JSON em data/.
-  Com times reais, pesquise e valide 4 atributos de cada titular: nome, número,
-  posição e aparência (skin/hair). /mira-vertical gira o campo 90 graus (tecla
+  dois times na formação real, cada jogador um boneco chibi (ou disco) na cor do
+  time, editável ao vivo (mover, setas/zonas/paint), com jogadas gravadas e
+  reproduzidas por quadros-chave (tecla R) e salvas como JSON. Com times reais,
+  valide 4 atributos por titular: nome, número, posição e aparência.
+  /mira-vertical gira o campo (tecla
   V). Use SEMPRE que o usuário disser /mira-tactics, mesa tática, quadro tático,
   prancheta tática, escalação, formação de time, campo de futebol com jogadores,
   montar a jogada, replay de jogada, posicionar os jogadores, tabuleiro tático,
@@ -19,9 +17,9 @@ description: >-
 
 # Skill: Mesa tática (campo com jogadores, jogadas gravadas e replay)
 
-Gera um slide dedicado onde um **campo de futebol cinematográfico** aparece com os **times já posicionados na formação real**. Cada jogador é um **boneco chibi animado** (ou um disco clássico) na cor do time, com o **número flutuando acima da cabeça**; **clicar mostra o nome**. O apresentador manipula tudo ao vivo: arrasta, adiciona, apaga, desenha setas/zonas/traços, **grava jogadas por quadros-chave e as reproduz** com interpolação suave, salvando cada jogada como um arquivo JSON.
+Um slide dedicado: campo cinematográfico com os dois times na formação real, cada jogador um boneco chibi animado (ou disco clássico) na cor do time (número acima da cabeça, nome ao clicar). O apresentador arrasta, adiciona, apaga e desenha setas/zonas/traços ao vivo, grava jogadas por quadros-chave e as reproduz com interpolação suave, salvando cada uma como JSON.
 
-> **Fonte da verdade:** o motor oficial é EMBARCADO no pacote e chega ao projeto junto com a instalação. Procure-o nesta ordem e use o primeiro que existir:
+> **Fonte da verdade:** o motor oficial é embarcado no pacote e chega com a instalação. Procure-o nesta ordem e use o primeiro que existir:
 >
 > 1. `mira-templates/decks/mesa-tatica/index.html` (projeto com Mira instalado)
 > 2. `templates/decks/mesa-tatica/index.html` (repositório fonte do Mira)
@@ -55,11 +53,11 @@ Comum aos dois: sombra e halo pulsante na cor do time, goleiro com cor própria,
 
 **Aparência real:** cada player aceita `skin` e `hair` para refletir a aparência pública do atleta. Tons nomeados: `skin: 'clara' | 'media' | 'escura'`, `hair: 'preto' | 'castanho' | 'loiro' | 'ruivo' | 'grisalho'` (hex direto também vale). Sem os campos, o motor usa variação determinística. **Semântica calibrada:** jogador negro = `'escura'`; pardo = `'media'`; `'media'` NÃO serve para quem é negro (fica caramelo e não reflete a realidade); em dúvida entre os dois para um atleta negro, use `'escura'`.
 
-## Fluxo conversacional (o ponto desta skill)
+## Fluxo conversacional
 
-> ### REGRA IMPERATIVA: sempre o ÚLTIMO JOGO, validando os 4 atributos (inegociável)
-> Quando o usuário cita times reais, o Mira **SEMPRE pesquisa o último jogo
-> disputado de CADA time citado** (ou o jogo do dia) e valida, para CADA titular
+> ### Regra: sempre o ÚLTIMO JOGO, validando os 4 atributos
+> Quando o usuário cita times reais, o Mira **sempre pesquisa o último jogo
+> disputado de cada time citado** (ou o jogo do dia) e valida, para cada titular
 > que COMEÇOU o jogo, **4 atributos obrigatórios**, nunca deduzidos de memória:
 >
 > 1. **Nome**: o onze que de fato começou, não "escalação provável" nem
@@ -117,11 +115,11 @@ var TACTICS = {
 
 Regras: o goleiro tem `gk: true` e vem primeiro; a ordem dos `players` casa com as posições da formação (goleiro, defesa, meio, ataque); `side` separa as metades; cores em hex (se as camisas forem parecidas, escolha um tom distinto para um deles e avise). O motor desenha campo de futebol; times com nº de jogadores diferente de 11 (ou formação desconhecida) são posicionados em grade.
 
-> ### DIRETIVA: a base começa SEMPRE com os dois times completos em formação (inegociável)
-> O `TACTICS` inicial traz os **dois times completos** (11 x 11, ou o elenco cheio combinado), cada um na sua **formação real**, posicionado pelo motor — **sem `u,v` absolutos no config**. Um gol, jogada ou lance é sempre um **quadro gravado** (`data/*.json`) por cima dessa formação cheia, **nunca** um elenco reduzido com posições fixas como estado inicial. Assim toda mesa abre com o time inteiro no lugar certo, e a animação (fluida no telão e no remote) reconstrói o lance a partir daí. Para congelar um momento específico, navegue até o quadro gravado; não corte o elenco nem cole `u,v` absolutos no `TACTICS`.
+> ### DIRETIVA: a base começa SEMPRE com os dois times completos em formação
+> O `TACTICS` inicial traz os **dois times completos** (11 x 11, ou o elenco cheio combinado) na **formação real**, posicionados pelo motor — **sem `u,v` absolutos no config**. Gol, jogada ou lance é sempre um **quadro gravado** (`data/*.json`) por cima dessa formação cheia, nunca um elenco reduzido com posições fixas como estado inicial; a animação (fluida no telão e no remote) reconstrói o lance a partir daí. Para congelar um momento, navegue até o quadro; não corte o elenco nem cole `u,v` absolutos no `TACTICS`.
 
-> ### DIRETIVA: todo time SEMPRE tem goleiro (inegociável)
-> Nenhuma mesa sai sem os dois goleiros, com `gk: true` e uniforme próprio (`goalie`). Como a base começa 11 x 11 na formação (diretiva acima), o goleiro já entra no gol pela própria formação. Um time sem goleiro é erro de geração, não uma opção.
+> ### DIRETIVA: todo time SEMPRE tem goleiro
+> Nenhuma mesa sai sem os dois goleiros, com `gk: true` e uniforme próprio (`goalie`). Como a base começa 11 x 11 na formação, o goleiro já entra no gol pela própria formação. Um time sem goleiro é erro de geração.
 >
 > **Cuidado com jogadas salvas ao alterar o elenco:** os `id` são sequenciais na ordem do array (time 1 e depois time 2), então inserir/remover jogador desloca os `id` seguintes e desalinha os `.json` de `data/`. Prefira **acrescentar o goleiro no fim do array do time** e, se algum id posterior mudar, **remapeie as chaves dos frames** nos `.json` afetados (jogadores ausentes de um frame ficam parados na posição da CONFIG, então o goleiro fica no gol durante a jogada).
 

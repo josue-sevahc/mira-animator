@@ -1,29 +1,24 @@
 ---
 name: mira-survey
 description: >-
-  Cria um slide de ENQUETE AO VIVO no Mira: a plateia escaneia um QR-code, vota
-  num Google Forms, e o resultado se atualiza em TEMPO REAL no slide (donut 3D
-  girando, padrão, ou gráfico de barras). Recebe dois links: o de VOTAÇÃO
-  (forms.gle/...), que vira o QR gerado localmente como SVG inline, e o da
-  PLANILHA de respostas (docs.google.com/spreadsheets/...), de onde o slide lê a
-  contagem. A leitura é pelo endpoint gviz por JSONP a cada poucos segundos,
-  então funciona até por file:// sem erro de CORS; nunca usa o Publicar na web
-  CSV (cacheado por minutos). A planilha precisa estar pública. Se faltar um dos
-  links, o agente pede antes de gerar. Use SEMPRE que o usuário disser
-  /mira-survey, enquete, enquete ao vivo, votação em tempo real, poll, resultado
-  ao vivo no slide, QR de enquete, a plateia vota e o slide atualiza, tipo
-  Mentimeter, tipo Slido, ou pedir um slide que mostra votação em tempo real.
-  Para um QR sem votação use /mira-qrcode; para um gráfico estático use
-  /mira-chart.
+  Cria um slide de ENQUETE AO VIVO: a plateia escaneia um QR-code, vota num
+  Google Forms, e o resultado se atualiza em TEMPO REAL no slide (donut 3D
+  girando ou barras). Recebe dois links — o de votação (vira o QR gerado local)
+  e o da planilha de respostas (o slide lê a contagem via endpoint gviz/JSONP).
+  Use SEMPRE que o usuário disser /mira-survey, enquete, enquete ao vivo,
+  votação em tempo real, poll, resultado ao vivo no slide, QR de enquete, a
+  plateia vota e o slide atualiza, tipo Mentimeter, tipo Slido, ou pedir um
+  slide que mostra votação em tempo real. Para um QR sem votação use
+  /mira-qrcode; para um gráfico estático use /mira-chart.
 ---
 
 # Skill: Enquete ao vivo no slide (QR + resultado em tempo real)
 
-Cria um slide onde a plateia escaneia um QR-code, vota num Google Forms, e o resultado aparece **se atualizando ao vivo** no slide (donut 3D girando ou barras). Casos típicos: pergunta para o público durante uma palestra, termômetro de opinião, quiz de abertura.
+Cria um slide onde a plateia escaneia um QR-code, vota num Google Forms, e o resultado aparece **se atualizando ao vivo** no slide (donut 3D girando ou barras). Casos típicos: pergunta ao público numa palestra, termômetro de opinião, quiz de abertura.
 
-> **Fonte da verdade:** layout e técnica validados com o usuário e congelados no artefato `decks/teste-survey/index.html`. Os tamanhos e posições abaixo são EXATOS, não improvise: foram ajustados um a um e aprovados. Quando em dúvida sobre qualquer medida, copie do artefato.
+> **Fonte da verdade:** layout e técnica validados e congelados em `decks/teste-survey/index.html`. Os tamanhos e posições abaixo são EXATOS; em dúvida sobre uma medida, copie do artefato.
 
-## O modelo mental (leia, é o ponto central)
+## O modelo mental
 
 O Mira **não é dono da votação**. Ele precisa só de **uma fonte de dados que devolve a contagem atual e muda com o tempo**. Essa fonte é uma planilha do Google ligada a um Google Forms:
 
@@ -66,7 +61,7 @@ curl -sL "https://docs.google.com/spreadsheets/d/<SHEET_ID>/gviz/tq?tqx=out:json
 
 Assuma **uma pergunta de múltipla escolha** (planilha com 2 colunas: carimbo de data/hora + resposta). O slide conta a **última coluna**. Se a planilha tiver várias perguntas, avise que o gráfico vai usar a última coluna e pergunte se é essa a desejada.
 
-## A ARMADILHA (não caia nela)
+## A armadilha
 
 **Nunca** use o endpoint "Publicar na web → CSV" (`/pub?output=csv`) para ler os votos: ele é **cacheado pelo Google por até ~5 minutos**, e o "tempo real" viraria mentira (votos com minutos de atraso). Use **só o `gviz`**, que lê o estado vivo. A leitura é por **JSONP** (injeção de `<script>` com `responseHandler`), que **fura o CORS** e funciona com o deck aberto por `file://`.
 
@@ -84,7 +79,7 @@ O QR do **link de votação** é gerado **localmente** e embutido como **SVG inl
    ```
 3. Cole o `<svg>` inteiro dentro do `.qr-card` (substituindo o SVG de exemplo do template). Mantenha o `viewBox` e o `shape-rendering="crispEdges"`. O CSS (`.qr-card svg{width:390px;height:390px}`) controla o tamanho. Acrescente o comentário `<!-- QR gerado localmente (pacote npm qrcode, ECC M) para LINK_VOTACAO -->`.
 
-## A disposição (EXATA, validada com o usuário)
+## A disposição (medidas EXATAS)
 
 Layout em duas colunas (`grid-template-columns: 1fr 520px`), tema escuro, laranja da marca `#FF904D`:
 
@@ -92,7 +87,7 @@ Layout em duas colunas (`grid-template-columns: 1fr 520px`), tema escuro, laranj
 - **Donut 3D:** wrapper de **562px**, inclinado para trás (`rotateX(50deg)`) com perspectiva, **girando devagar** (uma volta a cada 36s), com **profundidade real** (9 camadas SVG empilhadas em `translateZ`, as de baixo mais escuras = a parede lateral). O donut sobe **50px** (`translateY(-50px)`). No centro, o **total de votos** (número 86px, parado). Abaixo do donut, a **legenda** centralizada (cor + opção + contagem + %).
 - **Direita (QR):** card escuro arredondado, conteúdo subido (centralizado com `padding-bottom:200px`, ~80px acima do centro): "**Vote agora**" (39px, "agora" em laranja), a instrução "Aponte a câmera do celular para o QR-code" (23px), e o **QR num cartão branco** de **390px**. **Nunca** mostre o link de votação por extenso em lugar nenhum do slide, só o QR.
 
-Essas medidas são fixas. Não as recalcule "no olho": gere a partir do template abaixo.
+Não recalcule no olho; gere a partir do template abaixo.
 
 ## Os dois tipos de gráfico
 

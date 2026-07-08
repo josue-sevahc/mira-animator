@@ -2,18 +2,15 @@
 name: mira-vertical
 description: >-
   Gera uma versão VERTICAL (9:16, generalista para a tela atual: largura da tela
-  dividida por 3 por altura cheia, ex. 640x1080 numa tela 1080p) de um deck do
-  Mira, a partir do 16:9 original, OU cria slides verticais DO ZERO quando não
-  há deck de origem, para vídeo vertical (Reels, Shorts, TikTok, Stories). Na
-  conversão, não toca no original: cria um novo arquivo index-9x16.html ao lado.
-  Cada slide fica com só o título no topo e a animação num canvas alto e
-  padronizado logo abaixo; o título encolhe até caber em 2 linhas e o viewBox da
-  animação é esticado em altura. O eixo de cada animação é reformulado para o
-  retrato (fluxo horizontal vira vertical, comparação lado a lado vira
-  empilhada). Texto, cores, timings e loop ficam intactos. Use SEMPRE que o
-  usuário disser /mira-vertical, versão vertical, deixa vertical, formato 9:16,
-  1080x1920, apresentação vertical, para Reels, para Shorts, para Stories, para
-  TikTok, vídeo vertical, modo retrato, ou cria um slide vertical.
+  / 3 por altura cheia, ex. 640x1080 numa tela 1080p) de um deck do Mira a
+  partir do 16:9, OU cria slides verticais DO ZERO quando não há deck de origem,
+  para vídeo vertical (Reels, Shorts, TikTok, Stories). Não toca no original:
+  gera index-9x16.html ao lado, com só o título no topo e a animação num canvas
+  alto, e reformula o eixo de cada animação para o retrato. Use SEMPRE que o
+  usuário disser /mira-vertical,
+  versão vertical, deixa vertical, formato 9:16, 1080x1920, apresentação
+  vertical, para Reels, para Shorts, para Stories, para TikTok, vídeo vertical,
+  modo retrato, ou cria um slide vertical.
 ---
 
 # Skill: Versão Vertical do Deck (9:16) com canvas alto, só título + animação
@@ -25,7 +22,7 @@ Transforma um deck 16:9 do Mira numa versão **vertical generalista para a tela 
 
 > **Fonte da verdade:** o padrão desta skill foi validado e aprovado no deck de referência `specs/slides-verticais/index-9x16.html`, e as regras estão congeladas na spec `specs/slides-verticais/mira-vertical-9x16-spec.md` (com o comparativo elemento por elemento em `mira-vertical-comparacao.md`). Quando em dúvida sobre um valor exato, o resultado deve ficar **idêntico ao deck de referência**.
 
-## O resultado, em uma frase (leia primeiro)
+## O resultado, em uma frase
 
 Num slide de conteúdo da versão vertical aparecem **apenas duas coisas**: o **título principal colado no topo** (1 ou 2 linhas, nunca mais) e a **animação grande ocupando o canvas alto** logo abaixo, de ponta a ponta na largura da coluna. **Somem:** o subtítulo, o header do card (ícone + label + botão Replay) e a base do card (legenda uppercase + grade de pílulas). As laterais fora da coluna ficam **#333333**. Capa e encerramento (que não têm `.glass-card`) mantêm o layout próprio.
 
@@ -39,27 +36,25 @@ Quando não houver deck 16:9 de origem, ou o usuário pedir "cria um slide verti
 4. **Mesmos critérios de aprovação do modo conversão:** título no topo em no máximo 2 linhas, assunto ocupando bem a largura útil, nada cortado, REGRA DE FONTE MÍNIMA respeitada.
 5. Se o deck vertical (`index-9x16.html`) já existir, o slide novo é adicionado nele, no padrão dos demais.
 
-**Dimensão (leia primeiro, é o erro mais comum).** O quadro vertical é **generalista para a tela atual**, não um tamanho fixo em pixels. A **altura é a altura cheia da tela** (`100vh`) e a **largura é a largura da tela dividida por 3** (`calc(100vw / 3)`). Numa tela 1080p isso dá 640x1080; numa tela maior ou menor, escala junto. O quadro vertical é a **coluna central** (um terço da largura) ocupando toda a altura, com sobra dos dois lados como margem em #333333. Por que não 1080x1920 fixo: além de não caber numa tela de 1080 de altura, prenderia o resultado a uma única resolução. (A regra largura/3 dá uma coluna um tiquinho mais larga que o 9:16 cravado. Se a plataforma exigir 9:16 exato, use `--fmt-w: calc(100vh * 9 / 16)`.)
+**Dimensão (o erro mais comum).** O quadro vertical é **generalista para a tela atual**, não um tamanho fixo em pixels. A **altura é a altura cheia da tela** (`100vh`) e a **largura é a largura da tela dividida por 3** (`calc(100vw / 3)`). Numa tela 1080p isso dá 640x1080; numa tela maior ou menor, escala junto. O quadro vertical é a **coluna central** (um terço da largura) ocupando toda a altura, com sobra dos dois lados como margem em #333333. Por que não 1080x1920 fixo: além de não caber numa tela de 1080 de altura, prenderia o resultado a uma única resolução. (A regra largura/3 dá uma coluna um tiquinho mais larga que o 9:16 cravado. Se a plataforma exigir 9:16 exato, use `--fmt-w: calc(100vh * 9 / 16)`.)
 
 A abordagem **não é** moldura fixa que só encolhe: é **reformulação por slide**. Um `viewBox` 16:9 dentro de um quadro estreito e alto encaixa pela largura e ocupa só uma faixa fina, perdendo todo o impacto. Por isso aqui o palco vira **canvas alto** e a geometria de cada animação é **reformulada no JS da cópia** para subir e descer pela altura.
 
-## RESULTADO OBRIGATÓRIO (é o ponto desta skill, leia)
+## Critério de aprovação (é para assistir no smartphone)
 
-Estes 9:16 são para assistir no **smartphone**: a animação domina a tela e o título é o único texto de apoio. Três coisas têm que estar certas:
+A animação domina a tela e o título é o único texto de apoio. Três coisas têm que estar certas:
 
 1. **Composição enxuta: só título + animação.** Se aparecer subtítulo, header do card (ícone/label/Replay) ou a base de pílulas num slide de conteúdo, está ERRADO. Sobra do `.glass-card` apenas o filho do meio, o `.anim-stage`, sem fundo/borda/sombra/padding, de ponta a ponta.
 
-2. **Título no topo, no máximo 2 linhas.** O título fica colado no topo (não centralizado vertical) e nunca quebra o slide em 3 ou 4 linhas. Títulos longos (com palavras grandes como "documentação") encolhem sozinhos até caber em 2 linhas, via o script de auto-ajuste. Títulos curtos ficam no tamanho cheio.
+2. **Título no topo, no máximo 2 linhas.** Colado no topo (não centralizado vertical), nunca em 3 ou 4 linhas. Títulos longos (palavras grandes como "documentação") encolhem sozinhos até caber em 2 linhas, via o script de auto-ajuste. Títulos curtos ficam no tamanho cheio.
 
 3. **Animação vertical e maximizada no canvas alto.** Toda animação cujo eixo dominante era horizontal DEVE ser refeita na vertical (o que ia para o lado passa a ir de cima para baixo; lado a lado vira empilhado). Nada de partícula correndo numa faixa fina, nem blocos lado a lado encolhidos. O canvas é alto (128/203) e o `viewBox` é esticado em altura para casar, sem letterbox e sem distorção.
-
-Antes de entregar, olhe o resultado e responda: **cada slide de conteúdo mostra só o título (no máx. 2 linhas, no topo) e a animação vertical ocupando o canvas alto, com as laterais em #333333?** Se a resposta for não, refaça. Esse é o critério de aprovação.
 
 ## REGRA DE IDIOMA
 
 Siga `agents/_shared/idioma.md`. Texto visível em português correto. Proibido travessão (—): use vírgula ou dois-pontos.
 
-## REGRA DE FONTE MÍNIMA: 13px RENDERIZADOS (IMPERATIVO, INEGOCIÁVEL)
+## REGRA DE FONTE MÍNIMA: 13px RENDERIZADOS
 
 Validado empiricamente pelo usuário (teste de legibilidade em 2026-06-11): abaixo de 13px renderizados na tela, o texto fica ilegível no vertical. **Nenhum texto visível pode renderizar com menos de 13px.** Sem exceção: rótulos de nós, legendas de eixo, e qualquer texto SVG que permaneça visível.
 
@@ -111,7 +106,7 @@ Não remova os elementos do HTML: o CSS é cirúrgico e reversível, e o escopo 
 
 Antes (ou junto com) o esticão de altura, a geometria de cada animação é reformulada para subir e descer pela altura, conforme o playbook por metáfora abaixo. Esse é o passo que garante que a animação não fica como faixa fina horizontal: o eixo dominante horizontal vira vertical, elipse larga vira alta, comparação lado a lado vira empilhada. O loop interno e o `generation counter` ficam intactos.
 
-> Diferença para a versão antiga da skill: antes o palco era 4:5 e a animação ficava centralizada no meio do palco. Agora o palco é 128/203 (mais alto), o `viewBox` é esticado só em altura (a geometria fica igual, a área nova cresce para baixo) e a composição é enxugada para só título + animação. O ajuste fino de espalhar o conteúdo para baixo (miolo vazio) e de ampliar uma animação são ferramentas por slide, não passos obrigatórios (ver "Ferramentas por slide").
+> O ajuste fino de espalhar o conteúdo para baixo (miolo vazio) e de ampliar uma animação são ferramentas por slide, não passos obrigatórios (ver "Ferramentas por slide").
 
 ## Auto-ajuste de título (script injetado)
 
@@ -137,7 +132,7 @@ Títulos longos quebram o slide em 3 ou 4 linhas. Um IIFE mede a altura real de 
 
 ## Playbook de reflow por metáfora
 
-Aplique conforme a metáfora do slide. O princípio geral está no fim, para metáforas fora desta lista. (O eixo já era reformulado na versão anterior da skill; isto continua valendo.)
+Aplique conforme a metáfora do slide. O princípio geral está no fim, para metáforas fora desta lista.
 
 **Fluxo (partícula viajando entre nós).** Hoje é horizontal: `xs = scalePoint().range([120, W-120])`, partícula anima `cx`. Reflow para vertical:
 - `const ys = d3.scalePoint().domain(d3.range(ETAPAS.length)).range([H * 0.10, H * 0.90]);` e `const cx = W / 2;` fixo.
@@ -180,7 +175,7 @@ sim.force('center', d3.forceCenter(W / 2, H / 2))
 
 **Fileira de muitos itens (timeline, 6+ etapas).** Girar para uma coluna única pode espremer os itens. Recomponha em grade de 2 colunas (ou serpentina), com itens grandes. A ordem de leitura segue a nova disposição.
 
-**Princípio geral (metáfora fora da lista), OBRIGATÓRIO:** identifique o **eixo dominante**. Se for horizontal, **gire 90 graus** para vertical (sempre). Se for radial e achatado, inverta a compressão. Cresça a escala e recomponha até o assunto ocupar bem o canvas alto, centralizado, com o loop interno preservado.
+**Princípio geral (metáfora fora da lista):** identifique o **eixo dominante**. Se for horizontal, **gire 90 graus** para vertical (sempre). Se for radial e achatado, inverta a compressão. Cresça a escala e recomponha até o assunto ocupar bem o canvas alto, centralizado, com o loop interno preservado.
 
 ## Ferramentas por slide (caso a caso, não obrigatórias)
 

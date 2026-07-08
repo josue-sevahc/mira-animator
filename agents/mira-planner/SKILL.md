@@ -1,6 +1,7 @@
 ---
 name: mira-planner
-description: Planejador de conteudo para apresentacoes em slides HTML. Analisa o conteudo de um capitulo (LaTeX, PDF ou texto) e gera um plano detalhado de slides antes da montagem visual. Use esta skill SEMPRE que a skill /mira-builder for acionada, ou quando o usuario quiser planejar o conteudo de uma apresentacao, definir quantos slides criar, ou revisar a estrutura antes de gerar o HTML.
+description: >-
+  Planeja o conteudo de apresentacoes em slides HTML: analisa um capitulo (LaTeX, PDF ou texto) e gera um plano de slides antes da montagem visual. Use SEMPRE que a skill /mira-builder for acionada, ou quando o usuario quiser planejar o conteudo de uma apresentacao, definir quantos slides criar, ou revisar a estrutura antes de gerar o HTML.
 ---
 
 # Skill: Planejador de Conteudo para Slides
@@ -109,7 +110,7 @@ Apos o plano ser aprovado (ou gerado em modo sem feedback), **chame a skill `/mi
 
 ## Saida
 
-O plano de slides e um documento intermediario. Ele nao e salvo em arquivo; e passado para o `/mira-copywriter` para refinamento e depois para a `/mira-builder` como contexto de geracao. O plano deve conter:
+O plano e um documento intermediario, nao salvo em arquivo: passa para o `/mira-copywriter` (refinamento) e depois para a `/mira-builder` (contexto de geracao). Deve conter:
 
 1. Video escolhido para o header
 2. Lista ordenada de slides com template + conteudo

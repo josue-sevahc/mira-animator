@@ -1,13 +1,10 @@
 ---
 name: mira-animated-typing
 description: >-
-  Gera a cena "prompt digitado em zoom": animação que simula uma pessoa digitando um comando
-  para um agent harness (Claude Code, Codex, etc.) em fonte monoespaçada de terminal, gigante,
-  sobre fundo escuro, caractere a caractere, com cursor de barra vertical piscando estilo Windows.
-  A 100px da borda direita o texto desliza para a esquerda com o cursor ancorado (janela
-  deslizante). Aceita cor por trecho via tag color=#HEX (a tag nunca aparece), quebra de linha
-  simulada via /n (a linha sobe e a digitação continua embaixo) e print do texto como entrada
-  (reconhece texto, quebras e cores). Zero dependências, sem CDN, roda por file://. Use SEMPRE
+  Gera a cena "prompt digitado em zoom": simula uma pessoa digitando um comando de agent harness
+  (Claude Code, Codex) em fonte mono de terminal gigante sobre fundo escuro, cursor piscando estilo
+  Windows, com janela deslizante quando o texto passa da tela. Aceita cor por trecho (color=#HEX),
+  quebra de linha (/n) e print do texto como entrada. Zero dependências, roda por file://. Use SEMPRE
   que o usuário disser "/mira-animated-typing", "texto digitado em zoom", "animação de
   digitação", "simular digitando um comando", "prompt gigante sendo digitado", "efeito typing",
   "comando sendo escrito na tela", ou pedir uma cena de comando de agente digitado em tela cheia.
@@ -15,7 +12,7 @@ description: >-
 
 # Skill: Texto de Comando Digitado em Zoom
 
-Esta skill gera um slide autocontido que encena a digitação de um comando de agent harness em **zoom**: fonte mono gigante, fundo escuro, cursor piscando estilo Windows, janela deslizante quando o texto passa da tela e quebra de linha simulada via `/n`. A spec completa está em `specs/animated-typing/mira-animated-typing-spec.md`.
+Slide autocontido que encena a digitação de um comando de agent harness em **zoom**. Spec completa em `specs/animated-typing/mira-animated-typing-spec.md`.
 
 ## REGRA DE IDIOMA
 

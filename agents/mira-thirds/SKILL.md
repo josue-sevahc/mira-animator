@@ -1,15 +1,13 @@
 ---
 name: mira-thirds
 description: >-
-  Reenquadra um deck do Mira na REGRA DOS TERÇOS, sem mudar a proporção do
-  quadro. Coloca o conteúdo de cada slide (título + animação) nos dois terços da
-  esquerda de um grid 3x3 e deixa a coluna da direita inteira em CINZA #333,
-  100% limpa, reservada para você sobrepor texto, lower-third ou a câmera na
-  edição. A animação é reformulada por metáfora para PREENCHER os 2/3 (não fica
-  como faixa fina com sobra). Não toca no arquivo original: cria um novo arquivo
-  com sufixo -thirds ao lado. Funciona por cima do deck 16:9, da versão 1:1
-  (mira-squared) ou da 9:16 (mira-vertical), OU cria slides DO ZERO já compostos
-  em terços. O lado livre (cinza) é a direita por padrão, com opção de inverter.
+  Reenquadra um deck do Mira na regra dos terços, sem mudar a proporção: joga
+  título + animação nos 2/3 da esquerda de um grid 3x3 e deixa a coluna da
+  direita em cinza #333, limpa, para você sobrepor texto, lower-third ou câmera
+  na edição. A animação é reformulada por metáfora para preencher os 2/3; não
+  toca no original (cria arquivo -thirds ao lado). Aplica sobre 16:9, 1:1
+  (mira-squared) ou 9:16 (mira-vertical), ou cria slides do zero; lado cinza à
+  direita por padrão, com opção de inverter.
   Use SEMPRE que o usuário disser /mira-thirds, regra dos terços, rule of thirds,
   composição em terços, anima à esquerda, deixa a direita livre, coluna livre,
   dois terços à esquerda, grid 3x3, espaço para texto/câmera ao lado, abre espaço
@@ -19,7 +17,7 @@ description: >-
 
 # Skill: Regra dos Terços (animação preenchendo 2/3, um terço livre em cinza)
 
-Reenquadra um deck do Mira na **regra dos terços**: divide o quadro num grid 3x3 e joga todo o conteúdo do slide (título + animação) para as **colunas 1 e 2** (os dois terços da esquerda), deixando a **coluna 3 (direita) inteira em cinza #333, 100% limpa**, para você sobrepor depois texto, lower-third ou a câmera na edição. A animação é **reformulada por metáfora para preencher os 2/3**, no mesmo padrão de qualidade do `/mira-vertical`.
+Reenquadra um deck do Mira na **regra dos terços**: divide o quadro num grid 3x3 e joga o conteúdo do slide (título + animação) para as **colunas 1 e 2** (os dois terços da esquerda), deixando a **coluna 3 (direita) inteira em cinza #333, limpa**, para você sobrepor texto, lower-third ou câmera na edição. A animação é **reformulada por metáfora para preencher os 2/3**, no padrão de qualidade do `/mira-vertical`.
 
 ```
    COL 1        COL 2        COL 3
@@ -37,21 +35,21 @@ Tem dois modos: **conversão** (padrão quando existe deck de origem, passos aba
 
 > **Fonte da verdade:** o padrão desta skill está congelado na spec `_reversa_sdd/responsividade/sdd/mira-thirds.md` (score 92) e no mockup `_reversa_sdd/responsividade/sdd/referencias/3.jpg`. Quando em dúvida sobre um valor exato, o resultado deve bater com o mockup.
 
-## O resultado, em uma frase (leia primeiro)
+## O resultado, em uma frase
 
-Num slide de conteúdo aparecem **duas coisas nos 2/3 da esquerda**: o **título no topo** (1 ou 2 linhas) e a **animação grande preenchendo o box dos 2/3** logo abaixo. A **coluna 3 (direita) fica cinza #333, totalmente vazia** (sem título, animação ou pílula). Somem o subtítulo, o header do card e a base de pílulas. Capa e encerramento (sem `.glass-card`) mantêm o layout próprio.
+Num slide de conteúdo, nos **2/3 da esquerda**: o **título no topo** (1 ou 2 linhas) e a **animação grande preenchendo o box dos 2/3** abaixo. A **coluna 3 (direita) fica cinza #333, vazia** (sem título, animação ou pílula). Somem o subtítulo, o header do card e a base de pílulas. Capa e encerramento (sem `.glass-card`) mantêm o layout próprio.
 
-## CRITÉRIO Nº 1 (prioridade do usuário, leia antes de tudo)
+## CRITÉRIO Nº 1
 
-O essencial é que **a animação preencha a maior parte da área da animação (o box laranja dos 2/3)**. Preencher bem o box vale mais que a perfeição do reflow por metáfora. **Nunca** é aceitável a animação ficar como faixa fina com área vazia (ou preta) em volta. Antes de entregar, olhe cada slide e pergunte: **a animação domina os 2/3?** Se sobra muita área vazia, refaça.
+A animação tem que preencher a maior parte do box dos 2/3; isso vale mais que a perfeição do reflow por metáfora. Nunca aceite a animação como faixa fina com área vazia (ou preta) em volta. Antes de entregar, cheque cada slide: se sobra muita área vazia, refaça.
 
-## ÁREA SEGURA: 50px medidos do BOX dos 2/3, com TUDO dentro (título E animação) (INEGOCIÁVEL)
+## ÁREA SEGURA: 50px do BOX dos 2/3, com título E animação dentro
 
-**Esta margem é OBRIGATÓRIA do formato em terços** (ordem do usuário): todo deck gerado por esta skill leva a área segura de 50px no box dos 2/3, e **a animação tem que sempre CHEGAR na margem** (fit-to-área-segura, item C), nunca parar antes dela. Validado com o usuário nas imagens de referência (`_reversa_sdd/responsividade/margem_ref/`). A área segura pertence ao **box dos 2/3 de altura cheia** (o bloco do slide), NÃO ao palco da animação:
+Todo deck desta skill leva área segura de 50px no box dos 2/3, e **a animação tem que sempre CHEGAR na margem** (fit-to-área-segura, item C), nunca parar antes dela. Validado nas imagens de referência (`_reversa_sdd/responsividade/margem_ref/`). A área segura pertence ao **box dos 2/3 de altura cheia** (o bloco do slide), NÃO ao palco da animação:
 
-**(A) Margem de 50px medida das bordas do box dos 2/3, e tudo dentro dela.** O bloco do slide (`body > section:has(.glass-card) > div`) cobre os 2/3 de altura cheia e leva `padding: 50px; box-sizing: border-box;` (já no bloco canônico). **Título e animação vivem DENTRO da área segura**: o título é a primeira coisa dentro dela (nunca colado na borda do quadro) e a animação preenche todo o resto, sem vazar para o 1/3 cinza (a margem de 50px também vale na divisa com a coluna cinza). ERRADO (erro clássico): pôr os 50px como padding do `.anim-stage`, o que deixa o título fora da margem e a área segura abraçando só a animação. CERTO: a margem abraça o box dos 2/3 inteiro.
+**(A) Margem de 50px das bordas do box dos 2/3, tudo dentro dela.** O bloco do slide (`body > section:has(.glass-card) > div`) cobre os 2/3 de altura cheia e leva `padding: 50px; box-sizing: border-box;` (já no bloco canônico). **Título e animação vivem DENTRO da área segura**: o título é a primeira coisa dentro dela (nunca colado na borda do quadro) e a animação preenche o resto, sem vazar para o 1/3 cinza (os 50px valem também na divisa com a coluna cinza). ERRADO: pôr os 50px como padding do `.anim-stage`, o que deixa o título fora da margem e a área segura só na animação. CERTO: a margem abraça o box dos 2/3 inteiro.
 
-**(B) O palco ocupa TODO o resto da área segura + viewBox casado em runtime.** No canônico, o bloco do slide, o `.glass-card` e o `.anim-stage` formam uma cadeia flex (`flex: 1 1 auto; min-height: 0`): o palco estica da base do título até a margem de baixo, na largura toda da área segura, sem `aspect-ratio` fixo. Como a altura do título varia (1 ou 2 linhas), a razão do palco não é fixa: case o `viewBox` à razão REAL do palco em runtime, no início de cada build/replay (o `H` autorado, `H = W * 1080/1280`, é só valor inicial):
+**(B) O palco ocupa o resto da área segura + viewBox casado em runtime.** No canônico, o bloco do slide, o `.glass-card` e o `.anim-stage` formam uma cadeia flex (`flex: 1 1 auto; min-height: 0`): o palco estica da base do título até a margem de baixo, na largura toda da área segura, sem `aspect-ratio` fixo. Como a altura do título varia (1 ou 2 linhas), a razão do palco não é fixa: case o `viewBox` à razão REAL do palco em runtime, no início de cada build/replay (o `H` autorado, `H = W * 1080/1280`, é só valor inicial):
 
 ```js
 // F = FMT.<slug> (objeto {W, H} usado pela animação); svg = seleção d3 do <svg>
@@ -64,7 +62,7 @@ function casarPalco() {
 // (o fitToArea a cada tick absorve a mudança sem precisar rebuildar)
 ```
 
-**(C) A animação PREENCHE até a margem (fit-to-área-segura).** Não basta caber: a animação tem que **ocupar todo o palco, encostando na margem sem cruzar**. ERRADO: animação espremida no meio com vazio em volta. CERTO: conteúdo escalado até a margem. Envolva TODO o desenho num grupo `<g>` e, a cada quadro, escale/translade esse grupo para a bounding box dele preencher `[EDGE, W-EDGE] × [EDGE, H-EDGE]` (EDGE ≈ 14, só a folga de stroke/glow; a margem de 50px vem do padding do BLOCO dos 2/3):
+**(C) A animação PREENCHE até a margem (fit-to-área-segura).** Não basta caber: a animação tem que ocupar todo o palco, encostando na margem sem cruzar. Envolva TODO o desenho num grupo `<g>` e, a cada quadro, escale/translade esse grupo para a bounding box dele preencher `[EDGE, W-EDGE] × [EDGE, H-EDGE]` (EDGE ≈ 14, só a folga de stroke/glow; a margem de 50px vem do padding do BLOCO dos 2/3):
 
 ```js
 const EDGE = 14;
@@ -81,13 +79,13 @@ function fitToArea(g) {                 // g = <g> que envolve TODO o desenho
 // no 'tick' da animação (ou depois de compor o quadro): fitToArea(root)
 ```
 
-Vale para QUALQUER metáfora (grafo, fluxo, orbital, partículas): componha livre e deixe o fit preencher. O fit **substitui** o antigo clamp de margem e garante preenchimento determinístico. O 1/3 cinza continua intocado (o fit escala só o conteúdo do palco, que já vive nos 2/3).
+Vale para QUALQUER metáfora (grafo, fluxo, orbital, partículas): componha livre e deixe o fit preencher. O fit substitui o antigo clamp de margem e garante preenchimento determinístico. O 1/3 cinza continua intocado (o fit escala só o conteúdo do palco, que já vive nos 2/3).
 
-**(D) A margem é TRANSPARENTE (ordem do usuário).** A área segura existe como espaço vazio (o padding de 50px do bloco dos 2/3), **sem nenhuma pintura**: nada de faixa vermelha, moldura, borda ou CSS/JS de debug no arquivo entregue. Se precisar conferir a margem durante o trabalho, meça no DevTools ou pinte temporariamente e REMOVA antes de entregar. **Validação (a olho):** título e animação inteiros dentro dos 50px do box dos 2/3 (altura cheia, inclusive na divisa com o 1/3 cinza), e a animação encostando na margem (não parando antes). Se o título estiver colado na borda do quadro ou a margem abraçar só a animação, a implementação está ERRADA.
+**(D) A margem é TRANSPARENTE.** A área segura é espaço vazio (o padding de 50px do bloco dos 2/3), sem nenhuma pintura: nada de faixa vermelha, moldura, borda ou CSS/JS de debug no arquivo entregue. Se precisar conferir, meça no DevTools ou pinte temporariamente e REMOVA antes de entregar. **Validação (a olho):** título e animação inteiros dentro dos 50px do box dos 2/3 (altura cheia, inclusive na divisa com o 1/3 cinza), e a animação encostando na margem. Título colado na borda do quadro ou margem só na animação = ERRADO.
 
 ## O 1/3 cinza é sagrado
 
-Nada de título, pílula ou elemento da animação invade o terço reservado. Ele fica **cinza #333, limpo**, para sobreposição na edição. É a diferença central em relação à versão antiga desta skill, que deixava o terço com a cor do slide.
+Nada de título, pílula ou elemento da animação invade o terço reservado. Ele fica **cinza #333, limpo**, para sobreposição na edição (a versão antiga deixava o terço com a cor do slide).
 
 ## Criação do zero na geometria nativa
 
@@ -109,7 +107,7 @@ Siga `agents/_shared/idioma.md`. Texto visível em português correto. Proibido 
 
 ## Composição é ortogonal ao formato
 
-Esta skill **não muda a proporção** do quadro. Ela desloca o conteúdo para os 2/3 de um lado e pinta o outro terço de cinza. Por isso combina por cima de qualquer formato:
+Esta skill **não muda a proporção** do quadro: desloca o conteúdo para os 2/3 de um lado e pinta o outro terço de cinza. Por isso combina sobre qualquer formato:
 
 - `index.html` (16:9) → `index-thirds.html`
 - `index-1x1.html` (1:1) → `index-1x1-thirds.html`
@@ -129,13 +127,12 @@ Via CSS no bloco injetado:
 
 ### 2. Composição enxuta nos 2/3 (só título + animação)
 
-Escopado com `:has(.glass-card)`, como no vertical: oculta subtítulo, header e base do card, e zera o chrome do `.glass-card`, para a animação preencher o box dos 2/3. Título colado no topo com auto-ajuste para no máximo 2 linhas.
+Escopado com `:has(.glass-card)`, como no vertical: oculta subtítulo, header e base do card e zera o chrome do `.glass-card`, para a animação preencher o box dos 2/3. Título colado no topo, auto-ajustado para no máximo 2 linhas.
 
 ### 3. Palco = todo o resto da área segura + viewBox casado em runtime + reflow
 
 - **Palco esticado (cadeia flex):** bloco do slide, `.glass-card` e `.anim-stage` com `flex: 1 1 auto; min-height: 0` (já no canônico); o `.anim-stage` fica SEM `aspect-ratio` fixo e SEM padding, ocupando da base do título até a margem de baixo, na largura toda da área segura.
-- **viewBox casando:** para cada `<svg id="sv-...">`, autore a altura inicial como **`H = W * 1080 / 1280`** (mantendo `minX`, `minY`, `W`) e case à razão real do palco em runtime com `casarPalco` (seção da ÁREA SEGURA). `preserveAspectRatio="xMidYMid meet"`; casado em runtime, sem letterbox nem distorção.
-  - Exemplo: `viewBox="0 0 960 540"` nasce `viewBox="0 0 960 810"` e o `casarPalco` ajusta o `H` ao palco medido.
+- **viewBox casando:** para cada `<svg id="sv-...">`, autore a altura inicial como **`H = W * 1080 / 1280`** (mantendo `minX`, `minY`, `W`) e case à razão real do palco em runtime com `casarPalco` (seção da ÁREA SEGURA). `preserveAspectRatio="xMidYMid meet"`; sem letterbox nem distorção. Exemplo: `viewBox="0 0 960 540"` nasce `viewBox="0 0 960 810"` e o `casarPalco` ajusta o `H` ao palco medido.
 - **Reflow por metáfora** para preencher o box (CRITÉRIO Nº 1), conforme o playbook abaixo. Loop e generation counter intactos.
 
 ## Auto-ajuste de título (script injetado)
@@ -162,19 +159,19 @@ O mesmo IIFE do vertical: mede a altura real de cada `h2` e reduz a fonte 1px po
 
 ## Playbook de reflow por metáfora (alvo: box dos 2/3, quase-quadrado ~1280×1080)
 
-O objetivo é sempre o CRITÉRIO Nº 1: preencher a maior parte do box dos 2/3.
+Objetivo: CRITÉRIO Nº 1, preencher a maior parte do box.
 
 **Radial / orbital / hub.** Centrado no box; aumente o raio para preencher. Elipse quase circular (o box é quase-quadrado).
 
-**Fluxo (partícula entre nós).** O eixo pode permanecer horizontal (o box é levemente mais largo que alto), sempre reescalado para ocupar; ou na diagonal quando preencher melhor. Não deixar faixa fina.
+**Fluxo (partícula entre nós).** Eixo pode ficar horizontal (o box é levemente mais largo que alto), sempre reescalado para ocupar; ou na diagonal quando preencher melhor. Sem faixa fina.
 
-**Comparação A vs B / transformação.** Lado a lado se couber em tamanho grande, ou empilhe; realce alternado preservado.
+**Comparação A vs B / transformação.** Lado a lado se couber grande, ou empilhe; realce alternado preservado.
 
 **Rede / grafo (force layout).** `forceCenter` no centro do box; aumente espalhamento e `forceCollide` até usar o box; clampe as posições nas margens do box.
 
 **Flip cards (stage HTML).** Sem `viewBox`; o box dos 2/3 vale como caixa; disponha os cards para preencher.
 
-**Princípio geral (obrigatório):** identifique o eixo dominante e recomponha (escala e disposição) até o assunto ocupar a maior parte do box dos 2/3, com o loop preservado.
+**Princípio geral:** identifique o eixo dominante e recomponha (escala e disposição) até o assunto ocupar a maior parte do box, com o loop preservado.
 
 ## Passos
 
@@ -184,8 +181,8 @@ O objetivo é sempre o CRITÉRIO Nº 1: preencher a maior parte do box dos 2/3.
 4. **Injetar a moldura.** Logo antes de `</head>`, **como último bloco de estilo** (depois do Tailwind e de qualquer bloco `mira-squared`/`mira-vertical`), insira o `<style id="mira-formato-thirds">` canônico (abaixo): conteúdo nos 2/3, 1/3 cinza #333, composição só título + animação, canvas casado ao box.
 5. **Injetar o auto-ajuste de título.** Adicione o IIFE `fitTitles` no bloco de scripts, antes de `lucide.createIcons()`.
 6. **Reformular cada animação no JS.** Para cada slide de conteúdo: case o `H` do `viewBox` ao box (`H = W * 1080/1280`, mantendo `minX`, `minY`, `W`) e aplique o reflow para preencher o box (playbook). Preserve textos, cores, easing, durações, loop e generation counter.
-7. **Verificar o encaixe (CRITÉRIO Nº 1).** Confira que: (a) o conteúdo vive nos 2/3 da esquerda (título + animação); (b) **a animação preenche a maior parte do box dos 2/3**, sem faixa fina/preta; (c) a coluna 3 é cinza #333 e limpa (nem título nem pílula invadem); (d) o loop roda; (e) a proporção do quadro não mudou; (f) capa/encerramento com layout próprio.
-8. **Reportar.** Informe o caminho do arquivo `-thirds`, qual coluna ficou cinza (direita por padrão), e que a proporção do quadro não mudou (grave na mesma viewport do formato de origem).
+7. **Verificar o encaixe (CRITÉRIO Nº 1).** Confira: (a) conteúdo nos 2/3 da esquerda (título + animação); (b) **a animação preenche a maior parte do box dos 2/3**, sem faixa fina/preta; (c) coluna 3 cinza #333 e limpa (nem título nem pílula invadem); (d) o loop roda; (e) a proporção do quadro não mudou; (f) capa/encerramento com layout próprio.
+8. **Reportar.** Informe o caminho do arquivo `-thirds`, qual coluna ficou cinza (direita por padrão) e que a proporção não mudou (grave na mesma viewport do formato de origem).
 
 ### Bloco `<style id="mira-formato-thirds">` canônico (gerar exatamente isto)
 
@@ -239,8 +236,8 @@ O objetivo é sempre o CRITÉRIO Nº 1: preencher a maior parte do box dos 2/3.
 
 ## Observações honestas
 
-- A skill mexe só no enquadramento e na geometria da animação (para preencher o box). Ela **não** escreve nada na coluna cinza: essa coluna é deixada limpa de propósito para você compor por cima na edição.
-- Os elementos fixos da navegação (barra de progresso, botão de próximo) seguem presos à viewport, como nos outros formatos. Quando você grava na resolução do formato de origem, eles ficam no lugar certo.
+- A skill mexe só no enquadramento e na geometria da animação (para preencher o box). Ela **não** escreve nada na coluna cinza: fica limpa de propósito para você compor por cima na edição.
+- Os elementos fixos de navegação (barra de progresso, botão de próximo) seguem presos à viewport, como nos outros formatos. Gravando na resolução do formato de origem, ficam no lugar certo.
 
 ## Edge cases
 

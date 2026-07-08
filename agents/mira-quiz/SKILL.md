@@ -1,22 +1,18 @@
 ---
 name: mira-quiz
 description: >-
-  Cria um slide de QUIZ AO VIVO no Mira: a plateia escaneia um QR-code, responde
-  uma pergunta de múltipla escolha num Google Forms, e o slide lê a planilha de
-  respostas via Google Sheets gviz/JSONP. Diferente do mira-survey, o quiz tem
-  resposta correta configurada, estado de revelação controlado pelo apresentador
-  e porcentagens que só aparecem depois de revelar. Recebe link de votação,
-  link da planilha, pergunta, alternativas e resposta correta. Use SEMPRE que o
-  usuário disser /mira-quiz, quiz ao vivo, pergunta com resposta correta, revelar
-  resposta, ranking do quiz, quiz com QR, quiz tipo Mentimeter, quiz tipo Slido,
-  ou pedir um slide onde a plateia responde pelo celular e a resposta correta é
-  revelada no palco. Para enquete sem resposta correta use /mira-survey; para QR
-  simples use /mira-qrcode.
+  Slide de QUIZ AO VIVO no Mira: a plateia escaneia um QR-code e responde uma
+  múltipla escolha num Google Forms; o slide lê as respostas via Google Sheets
+  gviz/JSONP. Diferente do mira-survey, tem resposta correta, revelação
+  controlada pelo apresentador e percentuais que só aparecem após revelar. Use
+  SEMPRE que o usuário disser /mira-quiz, quiz ao vivo, pergunta com resposta
+  correta, revelar resposta, ranking do quiz, quiz com QR, quiz tipo Mentimeter,
+  quiz tipo Slido, ou pedir um slide onde a plateia responde pelo celular e a
+  resposta correta é revelada no palco. Para enquete sem resposta correta use
+  /mira-survey; para QR simples use /mira-qrcode.
 ---
 
 # Skill: Quiz ao vivo no slide
-
-Cria um slide onde a plateia escaneia um QR-code, responde uma pergunta de múltipla escolha num Google Forms, e o resultado aparece no slide com uma revelação animada da resposta correta.
 
 > **Fonte da verdade:** decisões congeladas em `BRAINSTORM_MIRA_QUIZ.md` (2026-06-30). O `/mira-quiz` reaproveita a arquitetura validada do `mira-survey`: Google Forms como interface, Google Sheets como fonte viva e leitura pelo endpoint `gviz` com JSONP para funcionar por `file://`.
 
@@ -32,7 +28,7 @@ O Mira não hospeda o jogo. Ele monta um slide que lê respostas já coletadas p
 
 ## Dados obrigatórios
 
-Antes de gerar qualquer slide, confirme que tem estes dados. Se faltar qualquer item, pergunte e pare.
+Confirme estes dados antes de gerar o slide. Se faltar qualquer item, pergunte e pare.
 
 | Dado | Exemplo | Uso |
 |---|---|---|
@@ -51,15 +47,15 @@ Texto sugerido se faltar algo:
 
 O Google Forms deve ter, no mínimo:
 
-- Um campo de identificação, como nome ou apelido.
+- Um campo de identificação (nome ou apelido).
 - Uma pergunta de múltipla escolha com as mesmas alternativas do slide.
 
-Na planilha, a skill assume:
+Na planilha, a skill assume (salvo se o usuário indicar outro cabeçalho):
 
-- A última coluna é a resposta do quiz, salvo se o usuário indicar outro cabeçalho.
-- A primeira coluna textual depois do timestamp é o nome/apelido, salvo se o usuário indicar outro cabeçalho.
+- A última coluna é a resposta do quiz.
+- A primeira coluna textual depois do timestamp é o nome/apelido.
 
-Se a planilha tiver várias perguntas, avise que o slide usará a última coluna e peça confirmação se isso não estiver claro.
+Se a planilha tiver várias perguntas, avise que o slide usará a última coluna e peça confirmação.
 
 ## Verificação da planilha
 
@@ -114,15 +110,15 @@ Comandos:
 
 ## Direção visual
 
-Padrão da v1: cards de alternativas com barras internas. É o melhor formato para esconder porcentagens antes da revelação e destacar a correta depois.
+Padrão da v1: cards de alternativas com barras internas. Melhor formato para esconder porcentagens antes da revelação e destacar a correta depois.
 
 - Fundo escuro Mira, laranja `#FF904D` como identidade.
 - Correta em verde `#35D07F`, fundo translúcido e halo leve.
-- Incorretas continuam legíveis, mas com menos destaque após revelar.
+- Incorretas continuam legíveis, com menos destaque após revelar.
 - Check discreto na correta.
 - Barras aparecem só depois da revelação.
-- Animação elegante, sem partículas e sem atrapalhar leitura em projeção.
-- A Regra Zero do Mira continua valendo: existe loop interno contínuo no slide. Aqui, a bolinha "ao vivo", o brilho suave do QR e uma respiração leve dos cards mantêm o slide vivo.
+- Animação elegante, sem partículas e sem atrapalhar a leitura em projeção.
+- A Regra Zero do Mira continua valendo (loop interno contínuo): a bolinha "ao vivo", o brilho do QR e a respiração leve dos cards mantêm o slide vivo.
 
 ## Template canônico
 

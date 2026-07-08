@@ -1,16 +1,13 @@
 ---
 name: mira-squared
 description: >-
-  Gera uma versão QUADRADA (1:1) de um deck do Mira, a partir do 16:9 original,
-  OU cria slides quadrados DO ZERO quando não há deck de origem, para vídeo em
-  formato quadrado (feed do Instagram, LinkedIn, etc.). Na conversão, não toca no
-  original: cria um novo arquivo index-1x1.html ao lado. Cada slide de conteúdo
-  vira só o título no topo e a animação num canvas quadrado padronizado logo
-  abaixo; o título encolhe até caber em 2 linhas e o viewBox da animação é casado
-  ao quadrado. O eixo de cada animação é reformulado por metáfora para preencher
-  o quadrado (não centraliza com faixa preta). O quadrado tem lado igual à altura
-  do 16:9 (100vh), centralizado, com as laterais em cinza #333. Texto, cores,
-  timings e loop ficam intactos. Use SEMPRE que o usuário disser /mira-squared,
+  Gera uma versão QUADRADA (1:1) de um deck do Mira a partir do 16:9 original, OU
+  cria slides quadrados do zero quando não há deck de origem, para vídeo quadrado
+  (feed do Instagram, LinkedIn, etc.). Não toca no original: cria index-1x1.html
+  ao lado. Cada slide de conteúdo vira só o título no topo + a animação num canvas
+  quadrado (lado = altura do 16:9, 100vh; laterais em #333), com o eixo reformulado
+  por metáfora para preencher o quadrado. Texto, cores, timings e loop intactos.
+  Use SEMPRE que o usuário disser /mira-squared,
   versão quadrada, deixa quadrado, formato 1:1, 1080x1080, apresentação quadrada,
   vídeo quadrado, cria um slide quadrado, novo slide 1:1, ou pedir o deck ou um
   slide novo num formato quadrado.
@@ -18,26 +15,26 @@ description: >-
 
 # Skill: Versão Quadrada do Deck (1:1) com canvas quadrado, só título + animação
 
-Transforma um deck 16:9 do Mira numa versão **quadrada**, para gravar como vídeo quadrado (feed do Instagram, LinkedIn). Cada slide de conteúdo vira **só o título no topo + a animação grande num canvas quadrado padronizado**, com a animação **reformulada por metáfora para preencher o quadrado**. Tem dois modos:
+Transforma um deck 16:9 do Mira numa versão **quadrada**, para gravar como vídeo quadrado (feed do Instagram, LinkedIn). Cada slide de conteúdo vira **só o título no topo + a animação grande num canvas quadrado**, reformulada por metáfora para preencher o quadrado. Tem dois modos:
 
 - **Modo conversão (padrão quando existe deck 16:9):** reformula um deck existente, slide a slide, conforme o playbook abaixo.
 - **Modo criação nativa (quando NÃO existe deck de origem, ou o usuário pede um slide novo já quadrado):** cria o slide do zero direto na geometria quadrada. Veja "Criação do zero na geometria nativa".
 
 > **Fonte da verdade:** o padrão desta skill está congelado na spec `_reversa_sdd/responsividade/sdd/mira-squared-1x1.md` (score 92) e no mockup `_reversa_sdd/responsividade/sdd/referencias/1.jpg`. Quando em dúvida sobre um valor exato, o resultado deve bater com o mockup. O padrão de qualidade do reflow é o mesmo do `/mira-vertical`.
 
-## O resultado, em uma frase (leia primeiro)
+## O resultado, em uma frase
 
-Num slide de conteúdo da versão quadrada aparecem **apenas duas coisas, ambas DENTRO da área segura de 50px do quadro**: o **título principal no topo da área segura** (1 ou 2 linhas, nunca mais) e a **animação grande preenchendo todo o resto da área segura** logo abaixo. **Somem:** o subtítulo, o header do card (ícone + label + botão Replay) e a base do card (legenda uppercase + grade de pílulas). As laterais fora do quadrado ficam **#333333**. Capa e encerramento (que não têm `.glass-card`) mantêm o layout próprio.
+Num slide de conteúdo aparecem **apenas duas coisas, ambas DENTRO da área segura de 50px do quadro**: o **título principal no topo da área segura** (1 ou 2 linhas, nunca mais) e a **animação grande preenchendo todo o resto da área segura** logo abaixo. **Somem:** o subtítulo, o header do card (ícone + label + botão Replay) e a base do card (legenda uppercase + grade de pílulas). As laterais fora do quadrado ficam **#333333**. Capa e encerramento (que não têm `.glass-card`) mantêm o layout próprio.
 
-## CRITÉRIO Nº 1 (prioridade do usuário, leia antes de tudo)
+## CRITÉRIO Nº 1 (prioridade do usuário)
 
-O essencial é que **a animação preencha a maior parte da área do quadrado (o quadrado laranja)**. Preencher bem o box vale mais que a perfeição do reflow por metáfora. **Nunca** é aceitável a animação ocupar só uma faixa fina com área vazia (ou preta) em volta. Antes de entregar, olhe cada slide e pergunte: **a animação domina o quadrado?** Se sobra muita área vazia, refaça.
+A animação tem que **preencher a maior parte do quadrado**. Preencher bem o box vale mais que a perfeição do reflow por metáfora. Nunca é aceitável a animação ocupar só uma faixa fina com área vazia (ou preta) em volta. Antes de entregar, olhe cada slide: se sobra muita área vazia, refaça.
 
-## ÁREA SEGURA: 50px medidos do QUADRO, com TUDO dentro (título E animação) (INEGOCIÁVEL)
+## ÁREA SEGURA: 50px medidos do QUADRO, com título E animação dentro
 
-**Esta margem é OBRIGATÓRIA do formato quadrado** (ordem do usuário): todo deck gerado por esta skill leva a área segura de 50px, e **a animação tem que sempre CHEGAR na margem** (fit-to-área-segura, item C), nunca parar antes dela. Validado com o usuário nas imagens de referência (`_reversa_sdd/responsividade/margem_ref/`). A área segura pertence ao **quadro do slide** (o quadrado inteiro), NÃO ao palco da animação:
+Todo deck desta skill leva área segura de 50px, e **a animação tem que sempre CHEGAR na margem** (fit-to-área-segura, item C), nunca parar antes dela. Validado nas imagens de referência (`_reversa_sdd/responsividade/margem_ref/`). A área segura pertence ao **quadro do slide** (o quadrado inteiro), NÃO ao palco da animação:
 
-**(A) Margem de 50px medida da borda do QUADRO, e tudo dentro dela.** `body > section:has(.glass-card)` leva `padding: 50px; box-sizing: border-box;` (já no bloco canônico). **Título e animação vivem DENTRO da área segura**: o título é a primeira coisa dentro dela (nunca colado na borda do quadro) e a animação preenche todo o resto. ERRADO (erro clássico): pôr os 50px como padding do `.anim-stage`, o que deixa o título fora da margem e a área segura abraçando só a animação. CERTO: a margem abraça o QUADRO inteiro.
+**(A) Margem de 50px medida da borda do QUADRO, e tudo dentro dela.** `body > section:has(.glass-card)` leva `padding: 50px; box-sizing: border-box;` (já no bloco canônico). O título é a primeira coisa dentro da margem (nunca colado na borda do quadro) e a animação preenche todo o resto. ERRADO: pôr os 50px como padding do `.anim-stage`, deixando o título fora da margem. CERTO: a margem abraça o QUADRO inteiro.
 
 **(B) O palco ocupa TODO o resto da área segura + viewBox casado em runtime.** No canônico, o bloco do slide, o `.glass-card` e o `.anim-stage` formam uma cadeia flex (`flex: 1 1 auto; min-height: 0`): o palco estica da base do título até a margem de baixo, na largura toda da área segura, sem `aspect-ratio` fixo. Como a altura do título varia (1 ou 2 linhas), a razão do palco não é fixa: case o `viewBox` à razão REAL do palco em runtime, no início de cada build/replay (o `H` autorado, `H = W`, é só valor inicial):
 
@@ -52,7 +49,7 @@ function casarPalco() {
 // (o fitToArea a cada tick absorve a mudança sem precisar rebuildar)
 ```
 
-**(C) A animação PREENCHE até a margem (fit-to-área-segura).** Não basta caber: a animação tem que **ocupar todo o palco, encostando na margem sem cruzar**. ERRADO: animação espremida no meio com vazio em volta. CERTO: conteúdo escalado até a margem. Envolva TODO o desenho da animação num grupo `<g>` e, a cada quadro, escale/translade esse grupo para a bounding box dele preencher `[EDGE, W-EDGE] × [EDGE, H-EDGE]` (EDGE ≈ 14, só a folga de stroke/glow; a margem de 50px vem do padding da SEÇÃO):
+**(C) A animação PREENCHE até a margem (fit-to-área-segura).** Não basta caber: tem que **ocupar todo o palco, encostando na margem sem cruzar**. Envolva TODO o desenho num grupo `<g>` e, a cada quadro, escale/translade esse grupo para a bounding box dele preencher `[EDGE, W-EDGE] × [EDGE, H-EDGE]` (EDGE ≈ 14, só a folga de stroke/glow; a margem de 50px vem do padding da SEÇÃO):
 
 ```js
 const EDGE = 14;
@@ -71,13 +68,13 @@ function fitToArea(g) {                 // g = <g> que envolve TODO o desenho
 
 Vale para QUALQUER metáfora (grafo, fluxo, orbital, partículas): componha livre e deixe o fit preencher. O fit **substitui** o antigo clamp de margem e garante preenchimento determinístico (independe de o force layout espalhar bem).
 
-**(D) A margem é TRANSPARENTE (ordem do usuário).** A área segura existe como espaço vazio (o padding de 50px da seção), **sem nenhuma pintura**: nada de faixa vermelha, moldura, borda ou CSS/JS de debug no arquivo entregue. Se precisar conferir a margem durante o trabalho, meça no DevTools ou pinte temporariamente e REMOVA antes de entregar. **Validação (a olho):** título e animação inteiros dentro dos 50px, e a animação encostando na margem (não parando antes). Se o título estiver colado na borda do quadro ou a margem abraçar só a animação, a implementação está ERRADA.
+**(D) A margem é TRANSPARENTE.** A área segura é só o espaço vazio do padding de 50px da seção, **sem nenhuma pintura**: nada de faixa vermelha, moldura, borda ou CSS/JS de debug no arquivo entregue. Para conferir durante o trabalho, meça no DevTools ou pinte temporariamente e REMOVA antes de entregar. **Validação (a olho):** título e animação inteiros dentro dos 50px, e a animação encostando na margem (não parando antes).
 
-## Dimensão (leia primeiro, é o erro mais comum)
+## Dimensão (erro mais comum)
 
-O quadrado é **generalista para a tela atual**, não um tamanho fixo em pixels. O **lado é a altura cheia da tela** (`100vh`), que é a mesma altura do 16:9. Numa tela 1080p isso dá 1080x1080; numa tela maior ou menor, escala junto. O quadrado é a **coluna central** (lado = 100vh) centralizada na horizontal, com sobra dos dois lados como margem em #333333. Por que não 1080x1080 fixo: prenderia o resultado a uma única resolução.
+O quadrado é **generalista para a tela atual**, não um tamanho fixo em pixels: o **lado é a altura cheia da tela** (`100vh`), a mesma do 16:9. Numa tela 1080p dá 1080x1080; em outra, escala junto. É a **coluna central** centralizada na horizontal, com sobra dos dois lados em #333333. Fixar 1080x1080 prenderia o resultado a uma única resolução.
 
-A abordagem **não é** moldura fixa que só centraliza (a versão antiga desta skill fazia isso, deixando o `<svg>` 16:9 com faixa preta acima e abaixo). Aqui o QUADRO é o slide inteiro, o palco ocupa toda a área segura abaixo do título e a geometria de cada animação é **reformulada no JS da cópia** para preencher.
+Não é moldura fixa que só centraliza (a versão antiga fazia isso, deixando o `<svg>` 16:9 com faixa preta acima e abaixo). Aqui o QUADRO é o slide inteiro, o palco ocupa toda a área segura abaixo do título e a geometria de cada animação é **reformulada no JS da cópia** para preencher.
 
 ## Criação do zero na geometria nativa
 
@@ -92,16 +89,15 @@ Quando não houver deck 16:9 de origem, ou o usuário pedir "cria um slide quadr
 
 Siga `agents/_shared/idioma.md`. Texto visível em português correto. Proibido travessão (—): use vírgula ou dois-pontos.
 
-## REGRA DE FONTE MÍNIMA: 13px RENDERIZADOS (IMPERATIVO)
+## REGRA DE FONTE MÍNIMA: 13px RENDERIZADOS
 
 Nenhum texto visível pode renderizar com menos de 13px. O `font-size` no SVG é em unidades do `viewBox`, não pixels de tela. Como o quadrado (lado = 100vh, ~1080px numa tela 1080p) é mais largo que a coluna do vertical, o mínimo do vertical (`font-size >= 24` para `W ≈ 960`) já fica folgado aqui; mantenha-o como piso. Texto HTML visível: `font-size` computado >= 13px (Tailwind `text-xs` PROIBIDO; menor permitido `text-sm`). Se não couber, encurte o texto, nunca diminua abaixo do mínimo.
 
 ## Regra de Ouro: nunca destrua o original
 
-- O deck 16:9 (`index.html`) **permanece intacto**. Você nunca edita o arquivo de origem.
-- Você cria um **arquivo novo** ao lado: `index-1x1.html`, e é nele que todo o reflow e a composição acontecem.
-- O que você pode mudar na cópia: **geometria, layout e composição** (viewBox, coordenadas, eixo de espalhamento, ocultar subtítulo/header/base via CSS, posição do título).
-- O que continua **intocado** mesmo na cópia: textos, rótulos, cores, easing, durações, a lógica do loop interno e o `generation counter` (`window.__slugGen`) que evita vazamento. Você reposiciona e oculta, não reescreve a animação do zero.
+- O deck 16:9 (`index.html`) **permanece intacto**; todo o reflow e a composição acontecem num **arquivo novo** ao lado, `index-1x1.html`.
+- Pode mudar na cópia: **geometria, layout e composição** (viewBox, coordenadas, eixo de espalhamento, ocultar subtítulo/header/base via CSS, posição do título).
+- Continua **intocado** mesmo na cópia: textos, rótulos, cores, easing, durações, a lógica do loop interno e o `generation counter` (`window.__slugGen`) que evita vazamento. Você reposiciona e oculta, não reescreve a animação.
 
 ## As três viradas de chave
 
@@ -112,7 +108,7 @@ Tudo via CSS no bloco injetado, escopado aos slides de conteúdo com `:has(.glas
 - **Subtítulo oculto:** `body > section:has(.glass-card) .text-center > p { display: none }`.
 - **Header e base do card ocultos:** `body > section .glass-card > div:first-child, body > section .glass-card > div:last-child { display: none }`.
 - **Chrome do card zerado:** `.glass-card` sem `background`, `border`, `box-shadow`, `backdrop-filter` e `padding`, para a animação ir de ponta a ponta.
-- **Conteúdo colado no topo, DENTRO da área segura:** `body > section:has(.glass-card) { justify-content: flex-start; padding: 50px }`. O padding de 50px É a área segura: título e animação ficam dentro dele.
+- **Conteúdo colado no topo, DENTRO da área segura:** `body > section:has(.glass-card) { justify-content: flex-start; padding: 50px }`. O padding de 50px É a área segura.
 - **Título proeminente:** `body > section h2 { font-size: clamp(35px, 5.6vh, 52px); line-height: 1.1 }`. O auto-ajuste por JS reduz só quando passa de 2 linhas.
 
 Não remova os elementos do HTML: o CSS é cirúrgico e reversível, e o escopo `:has(.glass-card)` preserva capa, encerramento e qualquer slide-régua.
@@ -127,7 +123,7 @@ Não remova os elementos do HTML: o CSS é cirúrgico e reversível, e o escopo 
 
 ### 3. Reflow do eixo para o quadrado (preencher a maior parte)
 
-A geometria de cada animação é reformulada para preencher o quadrado, conforme o playbook por metáfora abaixo. Esse é o passo que garante o CRITÉRIO Nº 1: a animação domina o quadrado, sem faixa fina e sem área vazia. O loop interno e o `generation counter` ficam intactos.
+A geometria de cada animação é reformulada para preencher o quadrado, conforme o playbook por metáfora abaixo (garante o CRITÉRIO Nº 1). O loop interno e o `generation counter` ficam intactos.
 
 ## Auto-ajuste de título (script injetado)
 
@@ -153,7 +149,7 @@ Títulos longos quebram o slide em 3 ou 4 linhas. Um IIFE mede a altura real de 
 
 ## Playbook de reflow por metáfora (alvo: quadrado 1:1)
 
-Aplique conforme a metáfora do slide. O objetivo é sempre o CRITÉRIO Nº 1: preencher a maior parte do quadrado. O princípio geral está no fim.
+Aplique conforme a metáfora do slide, sempre visando o CRITÉRIO Nº 1. O princípio geral está no fim.
 
 **Radial / orbital / hub (relógio, radar, núcleo + satélites).** Já é centrado; **aumente o raio** (`R`) para preencher o quadrado. No orbital, use elipse quase circular (`rx ≈ ry`), diferente da elipse achatada do 16:9. Núcleo e pulso radial no centro.
 
