@@ -57,6 +57,7 @@ Precisa de **ffmpeg** no PATH (ou em `MIRA_FFMPEG`) e dos pacotes **puppeteer** 
 
 - **16:9 (padrao):** `--width 1920 --height 1080`. O script mede a caixa do conteudo do slide e da um `scale` (`--fill`, padrao 0.92) para o slide preencher o frame sem distorcer. Sobra faixa lateral quando o conteudo e mais estreito que 16:9 (inerente, mantem a proporcao).
 - **9:16 / 1:1:** para um vertical/quadrado que preenche de verdade, grave a partir do **deck ja adaptado ao formato** (`index-9x16.html` do `mira-vertical`, `index-1x1.html` do `mira-squared`) com `--width 1080 --height 1920` (ou `1080 1080`) e `--fill 0` (o deck ja preenche). Gravar o 16:9 direto num quadro 9:16 deixa o conteudo como uma faixa fina no meio.
+- **Deck de cena unica (sem `body > section`):** decks que sao UMA cena full-screen (ex.: a cena de digitacao do `mira-animated-typing`, com `.mira-frame` no lugar de `<section>`) nao tem slides. A skill detecta isso (0 secoes), grava a **pagina inteira** como um unico clipe e, para um t=0 limpo, limpa a tela e carrega o deck do zero ja gravando. Passe `--seconds` cobrindo a duracao total da cena (decks que rodam uma vez e param). Para **1:1 sem cinza**, grave o `index-1x1.html` com `--width 1080 --height 1080`: o quadro do deck (lado `100vh`) preenche o frame quadrado e as laterais cinza nem aparecem (nada a recortar). O `--slides` e ignorado nesse caso.
 
 ## Passos
 
@@ -87,6 +88,7 @@ node build-video.cjs decks/meu/index-9x16.html decks/meu/reels.mp4 --slides 2 --
 - **9:16 com faixa fina no meio:** foi gravado o 16:9 direto; grave o `index-9x16.html` com `--fill 0`.
 - **Transicao maior que o clipe:** o script reduz o crossfade automaticamente e avisa.
 - **Chart-race que ainda nao entrou na viewport:** o script ja resolve, faz shim do IntersectionObserver e dispara a animacao no inicio da gravacao.
+- **Deck sem `body > section` (cena full-screen):** a skill grava a pagina inteira como clipe unico, recarregando o deck no inicio da gravacao (t=0 limpo). Ajuste `--seconds` para a duracao da cena; `--slides` nao se aplica. Para 1:1 sem cinza, grave o `index-1x1.html` em `1080x1080`.
 
 ## Checklist
 

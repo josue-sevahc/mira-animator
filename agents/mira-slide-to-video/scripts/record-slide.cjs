@@ -47,6 +47,7 @@ const FFMPEG = process.env.MIRA_FFMPEG || 'ffmpeg';
  * @param {number} [opts.width=1920]
  * @param {number} [opts.height=1080]
  * @param {number} [opts.fill=0]  fracao da altura a preencher via scale; 0 desliga
+ * @param {boolean} [opts.singleScene]  deck de cena unica (sem body>section): grava a pagina inteira
  */
 async function recordSlide(opts) {
   const { PuppeteerScreenRecorder } = require('puppeteer-screen-recorder');
@@ -106,8 +107,39 @@ async function recordSlide(opts) {
     await page.goto(fileUrl, { waitUntil: 'networkidle2', timeout: 60000 });
 
     const total = await page.evaluate(() => document.querySelectorAll('body > section').length);
-    if (slideIndex < 1 || slideIndex > total) {
+    // deck de cena unica: sem body>section, a pagina inteira e o "slide" e a animacao roda no load
+    const singleScene = opts.singleScene || total === 0;
+    if (!singleScene && (slideIndex < 1 || slideIndex > total)) {
       throw new Error(`slideIndex ${slideIndex} fora do intervalo (1..${total})`);
+    }
+
+    if (singleScene) {
+      // Cena full-screen (ex.: cena de digitacao do mira-animated-typing) que nao tem
+      // body>section e dispara sozinha no load. Para um t=0 limpo: limpamos a tela,
+      // comecamos a gravar e carregamos o deck do zero JA gravando. Num viewport quadrado
+      // (1080x1080) o quadro do deck (.mira-frame, lado 100vh) preenche o frame, entao nao
+      // sobra cinza nas laterais (nada a recortar).
+      const bg = await page.evaluate(() => {
+        const c = getComputedStyle(document.documentElement).backgroundColor;
+        return (c && c !== 'rgba(0, 0, 0, 0)') ? c : 'rgb(0,0,0)';
+      });
+      try {                                    // fundo default = cor do deck, evita flash branco no load
+        const client = await page.target().createCDPSession();
+        const m = /(\d+),\s*(\d+),\s*(\d+)/.exec(bg);
+        await client.send('Emulation.setDefaultBackgroundColorOverride',
+          { color: m ? { r: +m[1], g: +m[2], b: +m[3], a: 1 } : { r: 0, g: 0, b: 0, a: 1 } });
+      } catch (_) {}
+
+      await page.goto('about:blank');          // limpa a tela antes de comecar a gravar
+      const recorder = new PuppeteerScreenRecorder(page, {
+        fps: 30, ffmpeg_Path: FFMPEG,
+        videoFrame: { width: W, height: H }, aspectRatio: H > W ? '9:16' : '16:9',
+      });
+      await recorder.start(output);
+      await page.goto(fileUrl, { waitUntil: 'domcontentloaded' });  // deck do zero, ja gravando -> t=0 limpo
+      await new Promise(r => setTimeout(r, Math.round(seconds * 1000)));
+      await recorder.stop();
+      return output;
     }
 
     // esconder UI de navegacao + rolagem instantanea

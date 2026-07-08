@@ -3,13 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mira no Matrix, post animado em zoom</title>
+<title>Mira no Matrix, post animado em zoom (1:1)</title>
 <style>
-  html, body { margin: 0; height: 100%; background: #010401; overflow: hidden; }
+  /* Versão quadrada 1:1 generalista para a tela atual: lado = altura da tela (100vh).
+     Numa tela 1080p, 1080x1080. Laterais fora do quadrado em #333333.
+     Área segura de 50px (transparente): vem do padding-left do texto e da ancoragem
+     do cursor (RIGHT_MARGIN), ambos = 50px. A chuva/CRT preenchem o quadro todo. */
+  html { margin: 0; height: 100%; background: #333333; overflow: hidden; }
+  body {
+    margin: 0; height: 100%; background: #333333; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mira-frame {
+    position: relative; width: 100vh; height: 100vh;
+    overflow: hidden; background: #010401;
+  }
 
   /* chuva digital ao fundo */
   #matrix-rain {
-    position: fixed; inset: 0;
+    position: absolute; inset: 0;
     opacity: 0.26;
     transition: opacity 900ms ease;
   }
@@ -17,7 +29,7 @@
 
   /* vinheta CRT + scanlines */
   .crt {
-    position: fixed; inset: 0; pointer-events: none; z-index: 3;
+    position: absolute; inset: 0; pointer-events: none; z-index: 3;
     background:
       repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.18) 0 1px, transparent 1px 3px),
       radial-gradient(ellipse at center, transparent 55%, rgba(0, 10, 2, 0.55) 100%);
@@ -25,7 +37,7 @@
   }
   @keyframes crt-flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.93; } }
 
-  .zoom-stage { position: fixed; inset: 0; overflow: hidden; z-index: 2; }
+  .zoom-stage { position: absolute; inset: 0; overflow: hidden; z-index: 2; }
   .zoom-block {
     position: absolute; top: 50%; left: 0; right: 0;
     will-change: transform;
@@ -38,12 +50,12 @@
   .zoom-line {
     white-space: pre;
     font-family: 'Cascadia Mono', 'Consolas', 'Ubuntu Mono', 'DejaVu Sans Mono', 'Liberation Mono', monospace;
-    font-size: clamp(48px, 7.5vw, 160px);
+    font-size: clamp(40px, 6vh, 110px);        /* relativo ao quadrado (vh = lado do quadro) */
     line-height: 1.2;
     min-height: 1.2em;                         /* linha vazia (dois /n seguidos) mantém a altura */
     color: #d9ffe4;
     text-shadow: 0 0 6px rgba(0, 255, 65, 0.85), 0 0 22px rgba(0, 255, 65, 0.40), 0 0 60px rgba(0, 255, 65, 0.18);
-    padding-left: 60px;
+    padding-left: 50px;                        /* margem esquerda da área segura (50px) */
     transition: opacity 260ms ease;
   }
   .zoom-line.past { opacity: 0.5; }            /* linhas concluídas: mais transparentes, foco na ativa */
@@ -64,12 +76,12 @@
   .zoom-cursor.blink { animation: zoom-caret 1.06s steps(1, end) infinite; }
   @keyframes zoom-caret { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 
-  /* convite para o Enter */
+  /* selo no rodapé (dentro da área segura do quadro) */
   #enter-hint {
-    position: fixed; left: 50%; bottom: 7vh; transform: translateX(-50%);
+    position: absolute; left: 50%; bottom: 7vh; transform: translateX(-50%);
     z-index: 4;
     font-family: 'Cascadia Mono', 'Consolas', 'Ubuntu Mono', 'DejaVu Sans Mono', 'Liberation Mono', monospace;
-    font-size: clamp(14px, 1.4vw, 22px);
+    font-size: clamp(14px, 1.6vh, 22px);
     letter-spacing: 0.45em;
     color: #00ff41;
     text-shadow: 0 0 8px rgba(0, 255, 65, 0.8);
@@ -81,12 +93,14 @@
 </style>
 </head>
 <body>
-<canvas id="matrix-rain"></canvas>
-<div class="zoom-stage">
-  <div class="zoom-block" id="zoom-block"><div class="zoom-pan" id="zoom-pan"><span class="zoom-cursor blink" id="zoom-cursor"></span></div></div>
+<div class="mira-frame">
+  <canvas id="matrix-rain"></canvas>
+  <div class="zoom-stage">
+    <div class="zoom-block" id="zoom-block"><div class="zoom-pan" id="zoom-pan"><span class="zoom-cursor blink" id="zoom-cursor"></span></div></div>
+  </div>
+  <div class="crt"></div>
+  <div id="enter-hint">[ mira.sandeco.com.br ]</div>
 </div>
-<div class="crt"></div>
-<div id="enter-hint">[ mira.sandeco.com.br ]</div>
 <script>
 (function () {
   // LINES: cada linha é uma lista de segmentos { text, color }.
@@ -111,7 +125,7 @@
     [],
     [ { text: 'MIRA-Animator by sandeco', color: '#d9ffe4' } ],
   ];
-  const RIGHT_MARGIN = 100;                    // px de ancoragem do cursor à direita
+  const RIGHT_MARGIN = 50;                      // px de ancoragem do cursor à direita (margem da área segura)
   const TYPE_MIN = 100, TYPE_MAX = 230;        // ms por caractere
   const START_DELAY = 2120;                    // 2 piscadas completas de 1.06s antes de digitar
   const NEWLINE_PAUSE = 350;                   // pausa do "Enter"
@@ -122,6 +136,7 @@
   const pan = document.getElementById('zoom-pan');
   const cursor = document.getElementById('zoom-cursor');
   const hint = document.getElementById('enter-hint');
+  const frame = document.querySelector('.mira-frame');  // o quadrado 1:1: toda a geometria mede ele, não a janela
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let lineEls = [];
   let revealed = false;
@@ -152,7 +167,7 @@
   // Ancoragem por geometria de layout: offsetLeft/offsetTop ignoram o transform corrente (sem drift).
   function followX() {
     const caretEnd = cursor.offsetLeft + cursor.offsetWidth;
-    const shift = Math.max(0, caretEnd - (window.innerWidth - RIGHT_MARGIN));
+    const shift = Math.max(0, caretEnd - (frame.clientWidth - RIGHT_MARGIN));
     pan.style.transform = 'translateX(' + (-shift) + 'px)';  // câmera: todas as linhas deslocam juntas
   }
 
@@ -161,15 +176,16 @@
     block.style.transform = 'translateY(' + (-(el.offsetTop + el.offsetHeight / 2)) + 'px)';
   }
 
-  // Reveal (zoom out): mostra o texto inteiro centralizado na tela, cabendo em ~90% do viewport.
+  // Reveal (zoom out): mostra o texto inteiro centralizado no quadro, dentro da área segura (50px).
   function revealAll() {
     revealed = true;
     document.body.classList.add('revealed');   // chuva mais viva + pulso de glow
     lineEls.forEach(el => el.classList.remove('past'));  // tudo em opacidade cheia
-    const textW = Math.max.apply(null, lineEls.map(el => el.scrollWidth)) - 60;  // 60 = padding-left
+    const textW = Math.max.apply(null, lineEls.map(el => el.scrollWidth)) - 50;  // 50 = padding-left
     const totalH = pan.offsetHeight;
-    const s = Math.min(window.innerWidth * 0.9 / textW, window.innerHeight * 0.9 / totalH, 1);
-    const tx = (window.innerWidth - textW * s) / 2 - 60 * s;
+    const availW = frame.clientWidth - 100, availH = frame.clientHeight - 100;   // 50px de área segura em cada lado
+    const s = Math.min(availW / textW, availH / totalH, 1);
+    const tx = (frame.clientWidth - textW * s) / 2 - 50 * s;
     pan.style.transition = 'transform 700ms ease';
     block.style.transition = 'transform 700ms ease';
     pan.style.transformOrigin = 'top left';
@@ -266,7 +282,7 @@
   }
 
   window.addEventListener('resize', () => {
-    if (revealed) { revealAll(); return; }     // reveal recalculado para o novo viewport
+    if (revealed) { revealAll(); return; }     // reveal recalculado para o novo tamanho do quadro
     followY(); followX();
   });
 
@@ -279,8 +295,8 @@
     const FONT = 18;
     let cols = 0, drops = [];
     function size() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.width = frame.clientWidth;        // canvas do tamanho do quadrado, não da janela
+      canvas.height = frame.clientHeight;
       cols = Math.ceil(canvas.width / FONT);
       drops = Array.from({ length: cols }, () => Math.random() * canvas.height / FONT * -1);
       ctx.fillStyle = '#010401';

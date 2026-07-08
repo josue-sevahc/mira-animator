@@ -20,3 +20,5 @@ decks/apresentacao-mira/
 # Reversa
 .reversa/config.user.toml
 _reversa_sdd/
+# Videos de teste pesados nos decks
+decks/**/*.mp4

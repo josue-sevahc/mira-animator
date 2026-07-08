@@ -80,13 +80,18 @@ async function main() {
       .then(() => page.evaluate(() => document.querySelectorAll('body > section').length));
     await page.close();
 
-    const sel = (opt.slides || 'all');
-    slides = sel === 'all'
-      ? Array.from({ length: total }, (_, i) => i + 1)
-      : sel.split(',').map(s => parseInt(s.trim(), 10)).filter(n => n >= 1 && n <= total);
-    if (!slides.length) throw new Error('Nenhum slide valido em --slides (deck tem ' + total + ').');
-
-    console.log(`Deck: ${total} slides. Gravando: [${slides.join(', ')}] em ${W}x${H}.`);
+    const singleScene = total === 0;   // deck de cena unica (sem body>section): grava a pagina inteira
+    if (singleScene) {
+      slides = [1];
+      console.log(`Deck de cena unica (sem body>section). Gravando a pagina inteira em ${W}x${H}.`);
+    } else {
+      const sel = (opt.slides || 'all');
+      slides = sel === 'all'
+        ? Array.from({ length: total }, (_, i) => i + 1)
+        : sel.split(',').map(s => parseInt(s.trim(), 10)).filter(n => n >= 1 && n <= total);
+      if (!slides.length) throw new Error('Nenhum slide valido em --slides (deck tem ' + total + ').');
+      console.log(`Deck: ${total} slides. Gravando: [${slides.join(', ')}] em ${W}x${H}.`);
+    }
 
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'mira-s2v-'));
     const clips = [];
@@ -95,7 +100,7 @@ async function main() {
       const dur = perSlide[idx] != null ? perSlide[idx] : seconds;
       const clip = path.join(tmp, `clip-${String(i).padStart(2, '0')}.mp4`);
       console.log(`  slide ${idx}: ${dur}s ...`);
-      await recordSlide({ browser, input: deck, output: clip, slideIndex: idx, seconds: dur, width: W, height: H, fill });
+      await recordSlide({ browser, input: deck, output: clip, slideIndex: idx, seconds: dur, width: W, height: H, fill: singleScene ? 0 : fill, singleScene });
       clips.push(clip);
     }
 
